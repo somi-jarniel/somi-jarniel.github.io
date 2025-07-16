@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Developer's Guide to Agentic AI | Propelrr</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'propelrr-primary': '#ff9933',
+                        'propelrr-accent': '#0074e0',
+                        'propelrr-dark': '#1a1a1a',
+                        'propelrr-gray': '#f5f5f5',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; 
+            color: #1a1a1a; 
+        }
+        pre, code {
+            font-family: 'Fira Code', monospace;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link.active {
+            background-color: #fff5e6; 
+            color: #ff9933; 
+            border-left-color: #ff9933; 
+            font-weight: 600;
+        }
+        .sidebar-link:not(.active):hover {
+            background-color: #f5f5f5; 
+            border-left-color: #cccccc; 
+        }
+        .content-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e5e5; 
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+            transition: box-shadow 0.3s ease;
+        }
+        .content-card:hover {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+        }
+        .tab-btn {
+            white-space: nowrap;
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-btn.active {
+            border-color: #ff9933; 
+            color: #ff9933; 
+            background-color: #fff5e6; 
+        }
+        .code-tabs-container {
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        .flow-arrow {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        .flow-arrow::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.25rem;
+            color: #94a3b8; /* slate-400 */
+        }
+        .arch-box {
+            border: 2px solid;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            position: relative;
+        }
+        .arch-arrow {
+            position: relative;
+            width: 2px;
+            background-color: #64748b;
+            margin: 0.5rem auto;
+        }
+        .arch-arrow::after {
+            content: '▼';
+            position: absolute;
+            left: 50%;
+            bottom: -1px;
+            transform: translateX(-50%);
+            color: #64748b;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+    <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 fixed top-0 left-0 h-full p-4 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-30">
+        <h2 class="text-2xl font-bold text-propelrr-primary mb-6">Agentic AI Guide</h2>
+        <nav id="nav-menu" class="space-y-1">
+            <a href="#part1" class="sidebar-link block p-2 rounded-md text-propelrr-dark font-medium border-l-4 border-transparent text-sm">I. The Agentic Paradigm</a>
+            <a href="#part2" class="sidebar-link block p-2 rounded-md text-propelrr-dark font-medium border-l-4 border-transparent text-sm">II. Architecture & Setup</a>
+            <a href="#part3" class="sidebar-link block p-2 rounded-md text-propelrr-dark font-medium border-l-4 border-transparent text-sm">III. Prompt Engineering</a>
+            <a href="#part4" class="sidebar-link block p-2 rounded-md text-propelrr-dark font-medium border-l-4 border-transparent text-sm">IV. Workshop: MCP Server</a>
+            <a href="#part5" class="sidebar-link block p-2 rounded-md text-propelrr-dark font-medium border-l-4 border-transparent text-sm">V. Workshop: ADK Host</a>
+            <a href="#part6" class="sidebar-link block p-2 rounded-md text-propelrr-dark font-medium border-l-4 border-transparent text-sm">VI. Production-Ready Dev</a>
+            <a href="#part7" class="sidebar-link block p-2 rounded-md text-propelrr-dark font-medium border-l-4 border-transparent text-sm">VII. References</a>
+        </nav>
+    </aside>
+
+    <button id="menu-btn" class="md:hidden fixed top-4 left-4 z-40 bg-white p-2 rounded-md shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+    </button>
+    
+    <main class="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8">
+        <div class="max-w-4xl mx-auto">
+            <header class="mb-12 text-center">
+                <h1 class="text-4xl font-extrabold text-propelrr-dark mb-2">A Developer's Interactive Guide to Agentic AI</h1>
+                <p class="text-lg text-gray-500">Building Autonomous Systems with Docker, Google ADK, and MCP</p>
+            </header>
+            
+            <section id="part1" class="mb-16 space-y-8 scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">I. The Agentic AI Paradigm</h2>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">From Generative Models to Autonomous Agents</h3>
+                    <p class="text-gray-700 mb-4">This guide helps developers transition from traditional programming (like Java/PHP) to building agentic AI. It's a shift from writing step-by-step instructions to designing systems that can reason, plan, and act on their own. While a generative model can write an email, an agentic system can also send it. Agentic AI extends generative models by giving them the ability to use tools and interact with the real world to achieve goals, like managing a full marketing campaign without human intervention.</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">The Developer's Mindset Shift: Thinking in Goals, Not Instructions</h3>
+                    <p class="text-gray-700 mb-4">For developers accustomed to imperative programming, building agentic systems requires a profound mental shift. Traditional software is about providing explicit instructions. Agentic design flips this relationship. Instead of prescribing precise behaviors, the developer defines a framework for autonomous operation.</p>
+                    <p class="text-gray-700">The developer's role evolves from a "coder" specifying every action to an "architect" designing a bounded decision space. The focus shifts from writing the *how* to defining the *what* (the goals), the *who* (the permissions), and the *what not* (the guardrails). This elevates the developer's role to that of a system designer, tool builder, and governor, which is the key to building powerful and safe agentic AI systems.</p>
+                </div>
+            </section>
+
+            <section id="part2" class="mb-16 space-y-8 scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">II. Architecture & Setup</h2>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Prerequisites</h3>
+                    <p class="text-gray-700 mb-4">Before starting the workshops, ensure you have the following set up:</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Basic understanding of Python.</li>
+                        <li>Docker and Docker Compose installed on your machine. [1, 2]</li>
+                        <li>A Google Cloud Project with billing enabled. [3, 4]</li>
+                        <li>The Google Cloud CLI installed and authenticated (`gcloud auth application-default login`). [3, 4]</li>
+                        <li>API keys and tokens for any external services you wish to connect (e.g., Meta Ads).</li>
+                    </ul>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">The Docker-Powered Agentic Architecture</h3>
+                    <p class="text-gray-700 mb-4">We will build our system using a modern, containerized architecture. Docker Compose allows us to define and run our multi-component application—the ADK Agent Host and the MCP Tool Server—as isolated yet connected services. This approach simplifies setup, ensures consistency across environments, and is the recommended pattern by Docker for agentic development. [5, 6]</p>
+                    <div class="w-full bg-propelrr-gray border border-gray-200 rounded-lg p-6">
+                        <div class="arch-box border-gray-400 text-gray-700 bg-gray-200">Human User</div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="arch-box border-propelrr-accent text-blue-800 bg-blue-100">
+                            ADK Agent Host (Orchestrator)
+                            <div class="arch-arrow h-4"></div>
+                            <div class="flex justify-around space-x-2 mt-2">
+                                <div class="arch-box text-sm flex-1 border-yellow-500 text-yellow-800 bg-yellow-100">Worker Agent 1</div>
+                                <div class="arch-box text-sm flex-1 border-yellow-500 text-yellow-800 bg-yellow-100">Worker Agent 2</div>
+                            </div>
+                        </div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="arch-box border-teal-500 text-teal-800 bg-teal-100">MCP Tool Server</div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="flex justify-around space-x-2 mt-2">
+                            <div class="arch-box text-sm flex-1 border-purple-400 text-purple-800 bg-purple-100">Databases</div>
+                            <div class="arch-box text-sm flex-1 border-purple-400 text-purple-800 bg-purple-100">External APIs</div>
+                        </div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="arch-box border-orange-500 text-orange-800 bg-orange-100">LLM (e.g., Gemini)</div>
+                    </div>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Full System Request Flow</h3>
+                    <p class="text-gray-700 mb-4">Here is the detailed, end-to-end flow of a request through our multi-agent, containerized system.</p>
+                    <div class="space-y-3 text-sm">
+                        <div class="flow-arrow border-l-4 border-gray-400 pl-4 py-2 bg-gray-50 rounded-r-lg">
+                            <strong class="text-gray-800">1. User Prompt:</strong> A user gives a high-level goal to the ADK Agent Host.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">2. Orchestrator Planning:</strong> The `ProjectManagerAgent` (orchestrator) receives the goal. It analyzes the request and its instruction set to create a multi-step plan.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">3. Task Delegation:</strong> The orchestrator delegates the first task (e.g., "create a user record") to a specialized worker, the `DatabaseAgent`.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">4. Tool Selection:</strong> The `DatabaseAgent` determines it needs the `create_records` tool and prepares the parameters.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">5. MCP Tool Call:</strong> The agent's `MCPToolset` makes an HTTP POST request from the `adk-agent` container to the `mcp-server` container via Docker's internal network (e.g., `http://mcp-server:8000/tools/db/create_records`).
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">6. Server Execution:</strong> The MCP Server (FastAPI) validates the request and calls the appropriate service function.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">7. External Interaction:</strong> The service function interacts with the external resource (e.g., a MongoDB database).
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">8. Server Response:</strong> The MCP Server sends the result back to the ADK Agent Host as an HTTP response.
+                        </div>
+                        <div class="border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">9. Observation & Iteration:</strong> The `DatabaseAgent` observes the result, reports success to the `ProjectManagerAgent`, which then proceeds to the next step in its plan (e.g., delegating to the `CampaignAgent`). This loop continues until the goal is complete.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part3" class="mb-16 space-y-8 scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">III. The Art of Prompting: A Guide for ADK Agents</h2>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Guiding Your Agent's Reasoning</h3>
+                    <p class="text-gray-700 mb-4">In agentic AI, the prompt is more than just a question—it's the agent's **instruction manual**. A well-crafted prompt, especially the `instruction` parameter in the ADK's `LlmAgent`, is the most critical factor in determining an agent's performance. It defines the agent's persona, capabilities, constraints, and how it should reason about problems. [7, 8]</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Key Principles of Effective Agent Instructions</h3>
+                    <p class="text-gray-700 mb-4">Based on patterns from the official Google ADK samples, effective instructions combine several key elements to guide the agent's behavior. [9, 7]</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-propelrr-primary text-white flex items-center justify-center mr-4 mt-1">1</div>
+                            <div>
+                                <h4 class="font-semibold">Define a Clear Role and Persona</h4>
+                                <p class="text-gray-700">Start by telling the agent *what it is*. This sets the context for all subsequent reasoning. A specific persona leads to more focused and higher-quality responses. [9]</p>
+                                <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg"><strong class="text-red-700">Weak:</strong> "You are a helpful assistant."</div>
+                                    <div class="p-3 bg-green-50 border border-green-200 rounded-lg"><strong class="text-green-700">Strong:</strong> "You are a senior financial analyst. Your expertise is in analyzing stock performance and generating market summaries."</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-propelrr-primary text-white flex items-center justify-center mr-4 mt-1">2</div>
+                            <div>
+                                <h4 class="font-semibold">Provide Explicit Instructions and Constraints</h4>
+                                <p class="text-gray-700">Clearly state the rules the agent must follow. This includes how it should use its tools, how it should format its output, and what it should *not* do. [1]</p>
+                                <div class="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <strong class="text-green-700">Good Example:</strong>
+                                    <pre class="text-sm mt-1"><code>"1. When asked for a user's status, first use the `read_records` tool to find the user in the database.
+2. If the user is found, respond with their status.
+3. If the user is not found, respond with 'User not found.'
+4. Do not invent user information."</code></pre>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-propelrr-primary text-white flex items-center justify-center mr-4 mt-1">3</div>
+                            <div>
+                                <h4 class="font-semibold">Encourage Step-by-Step Reasoning (ReAct Pattern)</h4>
+                                <p class="text-gray-700">For complex tasks, instruct the agent to "think" or "reason" step-by-step before acting. This pattern, often called ReAct (Reason + Act), improves performance on multi-step problems and makes the agent's process more transparent. [10]</p>
+                                 <div class="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <strong class="text-green-700">Good Example:</strong>
+                                    <pre class="text-sm mt-1"><code>"For each user request:
+1. REASON: Think step-by-step about what information you need.
+2. ACT: Use available tools to gather that information.
+3. OBSERVE: Review the results from the tools.
+4. Repeat until you can provide a complete and accurate response."</code></pre>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                 <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Complex Instruction Example</h3>
+                    <p class="text-gray-700 mb-4">Let's combine these principles into the comprehensive instruction for our `ProjectManagerAgent` from the workshop.</p>
+                     <div class="bg-propelrr-dark text-white p-4 rounded-lg">
+<pre class="text-sm overflow-x-auto"><code>
+# INSTRUCTION FOR: ProjectManagerAgent
+
+## Persona
+You are a highly efficient project manager for a digital marketing team. Your job is to understand high-level business goals and translate them into a concrete plan of action. You do not perform tasks yourself; you delegate them to your team of specialists: DatabaseAgent and CampaignAgent.
+
+## Core Workflow
+For every user goal, you MUST follow this sequence:
+1.  **REASON:** Analyze the user's goal to create a logical, step-by-step plan. Identify dependencies between steps (e.g., you must create a user before you can use their ID).
+2.  **DELEGATE:** For each step in your plan, formulate a clear, concise prompt and delegate the task to the correct specialist agent.
+3.  **OBSERVE:** Wait for the specialist to return a result. If the result is an error, you must stop the plan and report the failure. If it is successful, use the output to inform the next step.
+4.  **RESPOND:** Once all steps are complete, provide a final, comprehensive summary report to the user detailing the actions taken and the results.
+
+## Delegation Rules & Team Capabilities
+-   **`DatabaseAgent`:** For any tasks involving creating, reading, updating, or deleting records in the company database.
+-   **`CampaignAgent`:** For any tasks involving the creation or management of marketing campaigns on external platforms like Meta.
+
+## Constraints
+-   You must process steps sequentially. Do not delegate a new task until the previous one has successfully completed.
+-   If any specialist agent reports an error, your entire plan fails. You must immediately halt execution and report the error clearly.
+-   Your final response must be a summary of the entire workflow.
+</code></pre>
+                     </div>
+                </div>
+            </section>
+
+            <section id="part4" class="mb-16 space-y-8 scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">IV. Workshop: The MCP Server</h2>
+                 <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Containerizing the Tool Server</h3>
+                    <p class="text-gray-700 mb-4">The MCP Server is a standard FastAPI application. We'll define its `Dockerfile` and then orchestrate it with Docker Compose.</p>
+                    <div class="bg-propelrr-dark rounded-lg shadow-lg">
+                        <div class="flex border-b border-gray-600 code-tabs-container">
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent active" data-target="mcp-dockerfile">mcp-tool-server/Dockerfile</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="mcp-main">mcp-tool-server/app/main.py</button>
+                        </div>
+                        <div class="relative p-4">
+                            <button class="copy-btn absolute top-4 right-4 bg-gray-600 hover:bg-gray-500 text-white text-xs font-semibold py-1 px-2 rounded">Copy</button>
+                            <div class="code-content" id="mcp-dockerfile">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-dockerfile">
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
+
+# Set the working directory in the container
+WORKDIR /code
+
+# Copy the dependencies file and install them
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Copy the application code
+COPY ./app /code/app
+
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Command to run the application using uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+</code></pre>
+                            </div>
+                            <div class="code-content" id="mcp-main" style="display: none;">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-python">
+# app/main.py
+from fastapi import FastAPI, HTTPException
+from app.schemas import *
+from app.services import meta_service, database_crud_service
+
+app = FastAPI(title="Agentic AI MCP Server")
+
+# ... (API endpoints as defined in previous steps) ...
+</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part5" class="mb-16 space-y-8 scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">V. Workshop: The ADK Host & Docker Compose</h2>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Orchestrating the System with Docker Compose</h3>
+                    <p class="text-gray-700 mb-4">This `docker-compose.yml` file is the heart of our setup. It defines both the `adk-agent` and `mcp-server` as services, allowing them to communicate over a shared Docker network. This file should be placed in the root of your project directory, alongside the `adk-marketing-agent` and `mcp-tool-server` folders. [5, 6]</p>
+                    <div class="bg-propelrr-dark rounded-lg shadow-lg">
+                        <div class="flex border-b border-gray-600 code-tabs-container">
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent active" data-target="compose-yaml">docker-compose.yml</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="adk-dockerfile">adk-marketing-agent/Dockerfile</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="adk-main">adk-marketing-agent/main.py</button>
+                        </div>
+                        <div class="relative p-4">
+                            <button class="copy-btn absolute top-4 right-4 bg-gray-600 hover:bg-gray-500 text-white text-xs font-semibold py-1 px-2 rounded">Copy</button>
+                            <div class="code-content" id="compose-yaml">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-yaml">
+# docker-compose.yml
+services:
+  # The ADK Agent Host Service
+  adk-agent:
+    build:
+      context: ./adk-marketing-agent
+    env_file:
+      - ./adk-marketing-agent/.env
+    # Depends on the mcp-server to ensure it starts first
+    depends_on:
+      - mcp-server
+    # Keep the container running
+    command: tail -f /dev/null
+
+  # The MCP Tool Server Service
+  mcp-server:
+    build:
+      context: ./mcp-tool-server
+    env_file:
+      - ./mcp-tool-server/.env
+    ports:
+      # Expose the server's port to the host machine
+      - "8000:8000"
+</code></pre>
+                            </div>
+                            <div class="code-content" id="adk-dockerfile" style="display: none;">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-dockerfile">
+# adk-marketing-agent/Dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# The default command keeps the container alive for exec commands.
+CMD ["tail", "-f", "/dev/null"]
+</code></pre>
+                            </div>
+                            <div class="code-content" id="adk-main" style="display: none;">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-python">
+# adk-marketing-agent/main.py
+import asyncio
+from agents.project_manager import ProjectManagerAgent
+
+async def main():
+    manager_agent = ProjectManagerAgent()
+    goal = "..." # Define goal here
+    
+    print("🚀 STARTING MULTI-AGENT WORKFLOW 🚀")
+    final_result = await manager_agent.run(goal)
+    print(f"🏁 WORKFLOW COMPLETE 🏁\n✅ Final Result: {final_result}")
+
+if __name__ == "__main__":
+    # To run the agent, you would use:
+    # docker-compose exec adk-agent python main.py
+    asyncio.run(main())
+</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part6" class="mb-16 space-y-8 scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">VI. Production-Ready Development</h2>
+                 <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Security & Optimization Checklist</h3>
+                    <p class="text-gray-700 mb-4">Building a prototype is only the first step. For production, focus on these critical non-functional requirements to create a robust, secure, and performant library.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="mr-3 text-lg">🔑</span>
+                            <div>
+                                <h4 class="font-semibold">Secure Credential Management</h4>
+                                <p class="text-gray-700">Never hardcode API keys. Use `.env` files for local development and a dedicated service like AWS Secrets Manager or HashiCorp Vault for production.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="mr-3 text-lg">🛡️</span>
+                            <div>
+                                <h4 class="font-semibold">Robust Error Handling & Logging</h4>
+                                <p class="text-gray-700">Catch specific exceptions, not broad ones. Implement structured logging to create an audit trail for debugging and monitoring.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="mr-3 text-lg">⏳</span>
+                            <div>
+                                <h4 class="font-semibold">Rate Limiting & Backoff</h4>
+                                <p class="text-gray-700">Handle API rate limit errors (HTTP 429) gracefully by implementing an exponential backoff-with-jitter retry strategy.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="mr-3 text-lg">🚦</span>
+                            <div>
+                                <h4 class="font-semibold">Human-in-the-Loop & Circuit Breakers</h4>
+                                <p class="text-gray-700">For high-risk actions (like high spend), require human approval. Implement circuit breakers to automatically halt the agent if it exceeds predefined safety thresholds.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            
+            <section id="part7" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">VII. References</h2>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Source URLs</h3>
+                    <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 break-all">
+                        <li>[1] Google. (n.d.). *Google Agent Development Kit (ADK) Documentation*. Retrieved from https://google.github.io/adk-docs/</li>
+                        <li>[2] Google. (n.d.). *ADK Samples Repository*. Retrieved from https://github.com/google/adk-samples/tree/main/python</li>
+                        <li>[3] Thiruveedula, M. (2024). *Model Context Protocol: A Comprehensive Guide*. Medium.</li>
+                        <li>[4] Google Cloud. (2024). *Build multi-agent systems using Google ADK*. Google Cloud Blog.</li>
+                        <li>[5] Docker. (2024). *Build AI Agents with Docker Compose*. Retrieved from https://www.docker.com/blog/build-ai-agents-with-docker-compose/</li>
+                        <li>[6] Docker. (n.d.). *Compose for Agents GitHub Repository*. Retrieved from https://github.com/docker/compose-for-agents/tree/main/adk</li>
+                        <li>[7] Google. (n.d.). *ADK Docs: Multi-agents*.</li>
+                        <li>[8] Google Cloud. (2024). *Agent Patterns with ADK: 1 Agent, 5 Ways*. Medium.</li>
+                        <li>[9] Saptak. (2025). *Powerful Agentic Design Patterns for Building AI Agents with Google ADK*.</li>
+                        <li>[10] Yao, S., et al. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models*. arXiv.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
+                <p class="font-semibold">Guide to Agentic AI with MCP & ADK</p>
+                <p>Version 1.0 (July 16, 2025)</p>
+                <p class="mt-2">Authored by: <a href="https://propelrr.com" target="_blank" rel="noopener noreferrer" class="text-propelrr-accent hover:underline">Jarniel Cataluña</a>, Technical Lead at Propelrr.</p>
+                <p class="mt-1 italic">This guide was conceptualized and directed by Jarniel Cataluña, with research and initial draft generation powered by Gemini's deep research function.</p>
+                <p class="mt-2">This document is intended for internal educational purposes at Propelrr.</p>
+            </footer>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('#nav-menu a');
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.getElementById('menu-btn');
+
+            const activateLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        activateLink(entry.target.id);
+                    }
+                });
+            }, { rootMargin: '-20% 0px -80% 0px', threshold: 0.1 });
+
+            sections.forEach(section => observer.observe(section));
+
+            menuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+            
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const parentViewer = e.target.closest('.bg-propelrr-dark');
+                    parentViewer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const targetId = button.dataset.target;
+                    parentViewer.querySelectorAll('.code-content').forEach(content => {
+                        content.style.display = content.id === targetId ? 'block' : 'none';
+                    });
+                });
+            });
+
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const codeBlock = e.target.closest('.relative').querySelector('.code-content[style*="block"] pre code');
+                    if (!codeBlock) return;
+                    
+                    const textToCopy = codeBlock.innerText;
+                    
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText(textToCopy);
+                        } else {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = textToCopy;
+                            textArea.style.position = 'fixed';
+                            textArea.style.opacity = '0';
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                        }
+                        e.target.innerText = 'Copied!';
+                        setTimeout(() => { e.target.innerText = 'Copy'; }, 2000);
+
+                    } catch(err) {
+                         console.error("Failed to copy text: ", err);
+                         e.target.innerText = 'Error';
+                         setTimeout(() => { e.target.innerText = 'Copy'; }, 2000);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
