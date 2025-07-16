@@ -599,4 +599,163 @@ class ProjectManagerAgent:
         print(f"[ProjectManagerAgent] Observed result from DatabaseAgent: {db_result}")
 
         campaign_prompt = "Create a 'Welcome VIP' lead generation campaign on Meta."
-        print(f"\n[ProjectManagerAgent] Delegating to CampaignAge
+        print(f"\n[ProjectManagerAgent] Delegating to CampaignAgent: '{campaign_prompt}'")
+        # In a real app: campaign_result = await campaign_agent.run(campaign_prompt)
+        campaign_result = "{'campaign_id': '12345', 'status': 'PAUSED'}" # Simulated result
+        print(f"[ProjectManagerAgent] Observed result from CampaignAgent: {campaign_result}")
+
+        final_report = f"Successfully created user and launched campaign {campaign_result}."
+        return final_report
+</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part6" class="mb-16 space-y-8 scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">VI. Production-Ready Development</h2>
+                 <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Security & Optimization Checklist</h3>
+                    <p class="text-gray-700 mb-4">Building a prototype is only the first step. For production, focus on these critical non-functional requirements to create a robust, secure, and performant library.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="mr-3 text-lg">🔑</span>
+                            <div>
+                                <h4 class="font-semibold">Secure Credential Management</h4>
+                                <p class="text-gray-700">Never hardcode API keys. Use `.env` files for local development and a dedicated service like AWS Secrets Manager or HashiCorp Vault for production.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="mr-3 text-lg">🛡️</span>
+                            <div>
+                                <h4 class="font-semibold">Robust Error Handling & Logging</h4>
+                                <p class="text-gray-700">Catch specific exceptions, not broad ones. Implement structured logging to create an audit trail for debugging and monitoring.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="mr-3 text-lg">⏳</span>
+                            <div>
+                                <h4 class="font-semibold">Rate Limiting & Backoff</h4>
+                                <p class="text-gray-700">Handle API rate limit errors (HTTP 429) gracefully by implementing an exponential backoff-with-jitter retry strategy.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="mr-3 text-lg">🚦</span>
+                            <div>
+                                <h4 class="font-semibold">Human-in-the-Loop & Circuit Breakers</h4>
+                                <p class="text-gray-700">For high-risk actions (like high spend), require human approval. Implement circuit breakers to automatically halt the agent if it exceeds predefined safety thresholds.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            
+            <section id="part7" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">VII. References</h2>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Source URLs</h3>
+                    <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 break-all">
+                        <li>[1] Google. (n.d.). *Google Agent Development Kit (ADK) Documentation*. Retrieved from https://google.github.io/adk-docs/</li>
+                        <li>[2] Google. (n.d.). *ADK Samples Repository*. Retrieved from https://github.com/google/adk-samples/tree/main/python</li>
+                        <li>[3] Thiruveedula, M. (2024). *Model Context Protocol: A Comprehensive Guide*. Medium.</li>
+                        <li>[4] Google Cloud. (2024). *Build multi-agent systems using Google ADK*. Google Cloud Blog.</li>
+                        <li>[5] Docker. (2024). *Build AI Agents with Docker Compose*. Retrieved from https://www.docker.com/blog/build-ai-agents-with-docker-compose/</li>
+                        <li>[6] Docker. (n.d.). *Compose for Agents GitHub Repository*. Retrieved from https://github.com/docker/compose-for-agents/tree/main/adk</li>
+                        <li>[7] Google. (n.d.). *ADK Docs: Multi-agents*.</li>
+                        <li>[8] Google Cloud. (2024). *Agent Patterns with ADK: 1 Agent, 5 Ways*. Medium.</li>
+                        <li>[9] Saptak. (2025). *Powerful Agentic Design Patterns for Building AI Agents with Google ADK*.</li>
+                        <li>[10] Yao, S., et al. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models*. arXiv.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
+                <p class="font-semibold">Guide to Agentic AI with MCP & ADK</p>
+                <p>Version 1.0 (July 16, 2025)</p>
+                <p class="mt-2">Authored by: <a href="https://propelrr.com" target="_blank" rel="noopener noreferrer" class="text-propelrr-accent hover:underline">Jarniel Cataluña</a>, Technical Lead at Propelrr.</p>
+                <p class="mt-1 italic">This guide was conceptualized and directed by Jarniel Cataluña, with research and initial draft generation powered by Gemini's deep research function.</p>
+                <p class="mt-2">This document is intended for internal educational purposes at Propelrr.</p>
+            </footer>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('#nav-menu a');
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.getElementById('menu-btn');
+
+            const activateLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        activateLink(entry.target.id);
+                    }
+                });
+            }, { rootMargin: '-20% 0px -80% 0px', threshold: 0.1 });
+
+            sections.forEach(section => observer.observe(section));
+
+            menuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+            
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const parentViewer = e.target.closest('.bg-propelrr-dark');
+                    parentViewer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const targetId = button.dataset.target;
+                    parentViewer.querySelectorAll('.code-content').forEach(content => {
+                        content.style.display = content.id === targetId ? 'block' : 'none';
+                    });
+                });
+            });
+
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const codeBlock = e.target.closest('.relative').querySelector('.code-content[style*="block"] pre code');
+                    if (!codeBlock) return;
+                    
+                    const textToCopy = codeBlock.innerText;
+                    
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText(textToCopy);
+                        } else {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = textToCopy;
+                            textArea.style.position = 'fixed';
+                            textArea.style.opacity = '0';
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                        }
+                        e.target.innerText = 'Copied!';
+                        setTimeout(() => { e.target.innerText = 'Copy'; }, 2000);
+
+                    } catch(err) {
+                         console.error("Failed to copy text: ", err);
+                         e.target.innerText = 'Error';
+                         setTimeout(() => { e.target.innerText = 'Copy'; }, 2000);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
