@@ -307,43 +307,177 @@ For every user goal, you MUST follow this sequence:
                     <p class="text-gray-700 mb-4">The MCP Server is a standard FastAPI application. We'll define its `Dockerfile` and then orchestrate it with Docker Compose.</p>
                     <div class="bg-propelrr-dark rounded-lg shadow-lg">
                         <div class="flex border-b border-gray-600 code-tabs-container">
-                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent active" data-target="mcp-dockerfile">mcp-tool-server/Dockerfile</button>
-                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="mcp-main">mcp-tool-server/app/main.py</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent active" data-target="mcp-main">app/main.py</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="mcp-schemas">app/schemas.py</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="mcp-meta">services/meta_service.py</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="mcp-db">services/database_crud_service.py</button>
                         </div>
                         <div class="relative p-4">
                             <button class="copy-btn absolute top-4 right-4 bg-gray-600 hover:bg-gray-500 text-white text-xs font-semibold py-1 px-2 rounded">Copy</button>
-                            <div class="code-content" id="mcp-dockerfile">
-<pre class="text-sm text-white overflow-x-auto"><code class="language-dockerfile">
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
-
-# Set the working directory in the container
-WORKDIR /code
-
-# Copy the dependencies file and install them
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
-# Copy the application code
-COPY ./app /code/app
-
-# Expose the port the app runs on
-EXPOSE 8000
-
-# Command to run the application using uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-</code></pre>
-                            </div>
-                            <div class="code-content" id="mcp-main" style="display: none;">
+                            <div class="code-content" id="mcp-main">
 <pre class="text-sm text-white overflow-x-auto"><code class="language-python">
-# app/main.py
+# mcp-tool-server/app/main.py
 from fastapi import FastAPI, HTTPException
 from app.schemas import *
 from app.services import meta_service, database_crud_service
 
-app = FastAPI(title="Agentic AI MCP Server")
+app = FastAPI(
+    title="Agentic AI MCP Server",
+    description="An MCP-compliant server for interacting with Marketing APIs and Databases.",
+    version="1.0.0"
+)
 
-# ... (API endpoints as defined in previous steps) ...
+@app.post("/tools/meta/create_campaign", response_model=MetaCampaignOutput, tags=["Marketing APIs"])
+async def create_meta_campaign_tool(data: MetaCampaignInput):
+    try:
+        return await meta_service.create_campaign(data)
+    except (ValueError, RuntimeError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/tools/db/create_records", response_model=CRUDOutput, tags=["Database CRUD"])
+async def create_records_tool(data: CreateInput):
+    try:
+        return await database_crud_service.create_records(data)
+    except (ValueError, RuntimeError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/tools/db/read_records", response_model=ReadOutput, tags=["Database CRUD"])
+async def read_records_tool(data: ReadInput):
+    try:
+        return await database_crud_service.read_records(data)
+    except (ValueError, RuntimeError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# ... other CRUD endpoints ...
+
+@app.get("/health", tags=["System"])
+def health_check():
+    return {"status": "ok"}
+</code></pre>
+                            </div>
+                            <div class="code-content" id="mcp-schemas" style="display: none;">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-python">
+# mcp-tool-server/app/schemas.py
+from pydantic import BaseModel, Field
+from typing import List, Optional, Literal, Dict, Any
+
+class MetaCampaignInput(BaseModel):
+    name: str = Field(..., description="The name of the campaign.")
+    objective: Literal['OUTCOME_LEADS', 'OUTCOME_SALES', 'OUTCOME_TRAFFIC']
+    status: Literal['ACTIVE', 'PAUSED'] = 'PAUSED'
+
+class MetaCampaignOutput(BaseModel):
+    campaign_id: str
+    status: str
+
+class CreateInput(BaseModel):
+    db_type: Literal['mongodb']
+    collection: str
+    data: List[Dict[str, Any]]
+
+class ReadInput(BaseModel):
+    db_type: Literal['mongodb']
+    collection: str
+    filter: Dict[str, Any] = Field(default_factory=dict)
+    projection: Optional[List[str]] = None
+    limit: int = 100
+
+class UpdateInput(BaseModel):
+    db_type: Literal['mongodb']
+    collection: str
+    filter: Dict[str, Any]
+    update_data: Dict[str, Any]
+
+class DeleteInput(BaseModel):
+    db_type: Literal['mongodb']
+    collection: str
+    filter: Dict[str, Any]
+
+class CRUDOutput(BaseModel):
+    success: bool
+    count: int
+    message: Optional[str] = None
+
+class ReadOutput(CRUDOutput):
+    data: List[Dict[str, Any]]
+</code></pre>
+                            </div>
+                            <div class="code-content" id="mcp-meta" style="display: none;">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-python">
+# mcp-tool-server/app/services/meta_service.py
+import os
+from dotenv import load_dotenv
+from facebook_business.api import FacebookAdsApi
+from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.exceptions import FacebookRequestError
+from app.schemas import MetaCampaignInput, MetaCampaignOutput
+
+load_dotenv()
+try:
+    FacebookAdsApi.init(
+        app_id=os.getenv("META_APP_ID"),
+        app_secret=os.getenv("META_APP_SECRET"),
+        access_token=os.getenv("META_ACCESS_TOKEN"),
+        api_version="v20.0"
+    )
+    AD_ACCOUNT_ID = os.getenv("META_AD_ACCOUNT_ID")
+except Exception as e:
+    print(f"Failed to initialize Meta Ads API: {e}")
+    AD_ACCOUNT_ID = None
+
+async def create_campaign(data: MetaCampaignInput) -> MetaCampaignOutput:
+    if not AD_ACCOUNT_ID:
+        raise RuntimeError("Meta Ad Account ID is not configured.")
+    try:
+        ad_account = AdAccount(fbid=AD_ACCOUNT_ID)
+        params = {'name': data.name, 'objective': data.objective, 'status': data.status, 'special_ad_categories': []}
+        new_campaign = ad_account.create_campaign(params=params)
+        return MetaCampaignOutput(campaign_id=new_campaign['id'], status=data.status)
+    except FacebookRequestError as e:
+        raise ValueError(f"Meta API Error: {e.api_error_message()}")
+</code></pre>
+                            </div>
+                            <div class="code-content" id="mcp-db" style="display: none;">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-python">
+# mcp-tool-server/app/services/database_crud_service.py
+import os
+from dotenv import load_dotenv
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
+from app.schemas import CreateInput, ReadInput, UpdateInput, DeleteInput, CRUDOutput, ReadOutput
+
+load_dotenv()
+MONGO_ALLOWLIST = ['users', 'products']
+try:
+    mongo_client = MongoClient(os.getenv("MONGO_URI"))
+    mongo_client.admin.command('ping')
+    mongo_db = mongo_client[os.getenv("MONGO_DATABASE")]
+except (ConnectionFailure, AttributeError) as e:
+    print(f"Failed to connect to MongoDB: {e}")
+    mongo_db = None
+
+def _check_permissions(collection: str):
+    if collection not in MONGO_ALLOWLIST:
+        raise ValueError(f"Access denied to collection: '{collection}'")
+
+async def create_records(data: CreateInput) -> CRUDOutput:
+    if not mongo_db: raise RuntimeError("MongoDB connection not available.")
+    _check_permissions(data.collection)
+    collection = mongo_db[data.collection]
+    result = collection.insert_many(data.data)
+    return CRUDOutput(success=True, count=len(result.inserted_ids))
+
+async def read_records(data: ReadInput) -> ReadOutput:
+    if not mongo_db: raise RuntimeError("MongoDB connection not available.")
+    _check_permissions(data.collection)
+    collection = mongo_db[data.collection]
+    projection_doc = {field: 1 for field in data.projection} if data.projection else None
+    cursor = collection.find(data.filter, projection_doc).limit(data.limit)
+    docs = [d for d in cursor]
+    for doc in docs: doc['_id'] = str(doc['_id'])
+    return ReadOutput(success=True, count=len(docs), data=docs)
+
+# ... Implementations for update_records and delete_records ...
 </code></pre>
                             </div>
                         </div>
@@ -361,6 +495,7 @@ app = FastAPI(title="Agentic AI MCP Server")
                              <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent active" data-target="compose-yaml">docker-compose.yml</button>
                              <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="adk-dockerfile">adk-marketing-agent/Dockerfile</button>
                              <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="adk-main">adk-marketing-agent/main.py</button>
+                             <button class="tab-btn p-3 font-mono text-sm text-gray-300 border-b-2 border-transparent" data-target="adk-manager">adk-marketing-agent/agents/project_manager.py</button>
                         </div>
                         <div class="relative p-4">
                             <button class="copy-btn absolute top-4 right-4 bg-gray-600 hover:bg-gray-500 text-white text-xs font-semibold py-1 px-2 rounded">Copy</button>
@@ -368,26 +503,22 @@ app = FastAPI(title="Agentic AI MCP Server")
 <pre class="text-sm text-white overflow-x-auto"><code class="language-yaml">
 # docker-compose.yml
 services:
-  # The ADK Agent Host Service
   adk-agent:
     build:
       context: ./adk-marketing-agent
     env_file:
       - ./adk-marketing-agent/.env
-    # Depends on the mcp-server to ensure it starts first
     depends_on:
       - mcp-server
-    # Keep the container running
+    # Use `docker-compose exec adk-agent python main.py` to run
     command: tail -f /dev/null
 
-  # The MCP Tool Server Service
   mcp-server:
     build:
       context: ./mcp-tool-server
     env_file:
       - ./mcp-tool-server/.env
     ports:
-      # Expose the server's port to the host machine
       - "8000:8000"
 </code></pre>
                             </div>
@@ -395,15 +526,10 @@ services:
 <pre class="text-sm text-white overflow-x-auto"><code class="language-dockerfile">
 # adk-marketing-agent/Dockerfile
 FROM python:3.9-slim
-
 WORKDIR /app
-
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
 COPY . .
-
-# The default command keeps the container alive for exec commands.
 CMD ["tail", "-f", "/dev/null"]
 </code></pre>
                             </div>
@@ -415,166 +541,62 @@ from agents.project_manager import ProjectManagerAgent
 
 async def main():
     manager_agent = ProjectManagerAgent()
-    goal = "..." # Define goal here
-    
-    print("🚀 STARTING MULTI-AGENT WORKFLOW 🚀")
+    goal = (
+        "We have a new VIP customer, 'jane.doe@example.com'. "
+        "First, add her to the 'users' collection with name 'Jane Doe' and status 'vip'. "
+        "Then, using her returned user ID, create a 'Welcome VIP' campaign on Meta "
+        "for lead generation."
+    )
+    print(f"🚀 STARTING MULTI-AGENT WORKFLOW 🚀\n🎯 GOAL: {goal}\n")
     final_result = await manager_agent.run(goal)
-    print(f"🏁 WORKFLOW COMPLETE 🏁\n✅ Final Result: {final_result}")
+    print(f"\n🏁 WORKFLOW COMPLETE 🏁\n✅ Final Result: {final_result}")
 
 if __name__ == "__main__":
-    # To run the agent, you would use:
-    # docker-compose exec adk-agent python main.py
     asyncio.run(main())
 </code></pre>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                             <div class="code-content" id="adk-manager" style="display: none;">
+<pre class="text-sm text-white overflow-x-auto"><code class="language-python">
+# adk-marketing-agent/agents/project_manager.py
+from google.adk.agents import LlmAgent
+from tools.mcp_toolset import mcp_server_tools # Assuming mcp_toolset.py is in tools/
 
-            <section id="part6" class="mb-16 space-y-8 scroll-mt-20">
-                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">VI. Production-Ready Development</h2>
-                 <div class="content-card p-6">
-                    <h3 class="text-xl font-semibold mb-3">Security & Optimization Checklist</h3>
-                    <p class="text-gray-700 mb-4">Building a prototype is only the first step. For production, focus on these critical non-functional requirements to create a robust, secure, and performant library.</p>
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <span class="mr-3 text-lg">🔑</span>
-                            <div>
-                                <h4 class="font-semibold">Secure Credential Management</h4>
-                                <p class="text-gray-700">Never hardcode API keys. Use `.env` files for local development and a dedicated service like AWS Secrets Manager or HashiCorp Vault for production.</p>
-                            </div>
-                        </li>
-                         <li class="flex items-start">
-                            <span class="mr-3 text-lg">🛡️</span>
-                            <div>
-                                <h4 class="font-semibold">Robust Error Handling & Logging</h4>
-                                <p class="text-gray-700">Catch specific exceptions, not broad ones. Implement structured logging to create an audit trail for debugging and monitoring.</p>
-                            </div>
-                        </li>
-                         <li class="flex items-start">
-                            <span class="mr-3 text-lg">⏳</span>
-                            <div>
-                                <h4 class="font-semibold">Rate Limiting & Backoff</h4>
-                                <p class="text-gray-700">Handle API rate limit errors (HTTP 429) gracefully by implementing an exponential backoff-with-jitter retry strategy.</p>
-                            </div>
-                        </li>
-                         <li class="flex items-start">
-                            <span class="mr-3 text-lg">🚦</span>
-                            <div>
-                                <h4 class="font-semibold">Human-in-the-Loop & Circuit Breakers</h4>
-                                <p class="text-gray-700">For high-risk actions (like high spend), require human approval. Implement circuit breakers to automatically halt the agent if it exceeds predefined safety thresholds.</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-            
-            <section id="part7" class="scroll-mt-20">
-                <h2 class="text-3xl font-bold text-propelrr-dark border-b-2 border-propelrr-primary pb-2">VII. References</h2>
-                <div class="content-card p-6">
-                    <h3 class="text-xl font-semibold mb-3">Source URLs</h3>
-                    <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 break-all">
-                        <li>[1] Google. (n.d.). *Google Agent Development Kit (ADK) Documentation*. Retrieved from https://google.github.io/adk-docs/</li>
-                        <li>[2] Google. (n.d.). *ADK Samples Repository*. Retrieved from https://github.com/google/adk-samples/tree/main/python</li>
-                        <li>[3] Thiruveedula, M. (2024). *Model Context Protocol: A Comprehensive Guide*. Medium.</li>
-                        <li>[4] Google Cloud. (2024). *Build multi-agent systems using Google ADK*. Google Cloud Blog.</li>
-                        <li>[5] Docker. (2024). *Build AI Agents with Docker Compose*. Retrieved from https://www.docker.com/blog/build-ai-agents-with-docker-compose/</li>
-                        <li>[6] Docker. (n.d.). *Compose for Agents GitHub Repository*. Retrieved from https://github.com/docker/compose-for-agents/tree/main/adk</li>
-                        <li>[7] Google. (n.d.). *ADK Docs: Multi-agents*.</li>
-                        <li>[8] Google Cloud. (2024). *Agent Patterns with ADK: 1 Agent, 5 Ways*. Medium.</li>
-                        <li>[9] Saptak. (2025). *Powerful Agentic Design Patterns for Building AI Agents with Google ADK*.</li>
-                        <li>[10] Yao, S., et al. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models*. arXiv.</li>
-                    </ul>
-                </div>
-            </section>
+# --- Worker Agents Definition ---
+db_agent = LlmAgent(
+    name="DatabaseAgent",
+    instruction="You are a database specialist...",
+    tools=[mcp_server_tools]
+)
+campaign_agent = LlmAgent(
+    name="CampaignAgent",
+    instruction="You are a marketing specialist...",
+    tools=[mcp_server_tools]
+)
 
-            <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-                <p class="font-semibold">Guide to Agentic AI with MCP & ADK</p>
-                <p>Version 1.0 (July 16, 2025)</p>
-                <p class="mt-2">Authored by: <a href="https://propelrr.com" target="_blank" rel="noopener noreferrer" class="text-propelrr-accent hover:underline">Jarniel Cataluña</a>, Technical Lead at Propelrr.</p>
-                <p class="mt-1 italic">This guide was conceptualized and directed by Jarniel Cataluña, with research and initial draft generation powered by Gemini's deep research function.</p>
-                <p class="mt-2">This document is intended for internal educational purposes at Propelrr.</p>
-            </footer>
-        </div>
-    </main>
+# --- Orchestrator Agent Definition ---
+class ProjectManagerAgent:
+    def __init__(self):
+        self.orchestrator = LlmAgent(
+            name="ProjectManagerAgent",
+            instruction="""## Persona\nYou are a highly efficient project manager..."""
+        )
+        self.worker_agents = {"DatabaseAgent": db_agent, "CampaignAgent": campaign_agent}
+        print("-> Agent 'ProjectManagerAgent' and its workers are ready.")
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const sections = document.querySelectorAll('section');
-            const navLinks = document.querySelectorAll('#nav-menu a');
-            const sidebar = document.getElementById('sidebar');
-            const menuBtn = document.getElementById('menu-btn');
+    async def run(self, goal: str):
+        # This method simulates the hierarchical workflow.
+        print(f"\n[ProjectManagerAgent] Received goal, creating plan...")
+        plan = [
+            "Delegate user creation to DatabaseAgent.",
+            "Delegate campaign creation to CampaignAgent using the new user's info."
+        ]
+        print(f"[ProjectManagerAgent] Plan created: {plan}")
 
-            const activateLink = (id) => {
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${id}`) {
-                        link.classList.add('active');
-                    }
-                });
-            };
+        db_prompt = "Create a new record in the 'users' collection for 'Jane Doe' (jane.doe@example.com) with status 'vip'."
+        print(f"\n[ProjectManagerAgent] Delegating to DatabaseAgent: '{db_prompt}'")
+        # In a real app, this would be: db_result = await db_agent.run(db_prompt)
+        db_result = "{'success': true, 'count': 1}" # Simulated result
+        print(f"[ProjectManagerAgent] Observed result from DatabaseAgent: {db_result}")
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        activateLink(entry.target.id);
-                    }
-                });
-            }, { rootMargin: '-20% 0px -80% 0px', threshold: 0.1 });
-
-            sections.forEach(section => observer.observe(section));
-
-            menuBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-            
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            tabButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const parentViewer = e.target.closest('.bg-propelrr-dark');
-                    parentViewer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-
-                    const targetId = button.dataset.target;
-                    parentViewer.querySelectorAll('.code-content').forEach(content => {
-                        content.style.display = content.id === targetId ? 'block' : 'none';
-                    });
-                });
-            });
-
-            const copyButtons = document.querySelectorAll('.copy-btn');
-            copyButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const codeBlock = e.target.closest('.relative').querySelector('.code-content[style*="block"] pre code');
-                    if (!codeBlock) return;
-                    
-                    const textToCopy = codeBlock.innerText;
-                    
-                    try {
-                        if (navigator.clipboard && window.isSecureContext) {
-                            navigator.clipboard.writeText(textToCopy);
-                        } else {
-                            const textArea = document.createElement('textarea');
-                            textArea.value = textToCopy;
-                            textArea.style.position = 'fixed';
-                            textArea.style.opacity = '0';
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
-                        }
-                        e.target.innerText = 'Copied!';
-                        setTimeout(() => { e.target.innerText = 'Copy'; }, 2000);
-
-                    } catch(err) {
-                         console.error("Failed to copy text: ", err);
-                         e.target.innerText = 'Error';
-                         setTimeout(() => { e.target.innerText = 'Copy'; }, 2000);
-                    }
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+        campaign_prompt = "Create a 'Welcome VIP' lead generation campaign on Meta."
+        print(f"\n[ProjectManagerAgent] Delegating to CampaignAge
