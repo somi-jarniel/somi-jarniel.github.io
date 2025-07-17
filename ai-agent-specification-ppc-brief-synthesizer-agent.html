@@ -863,9 +863,7 @@ promote their new Smartwatch. Goal is to maximize leads for Q4 with a $50,000
                 <div class="item-key">Version:</div>
                 <div class="item-value">1.0</div>
                 <div class="item-key">High-Level Description:</div>
-                <div class="item-value">Acts as the data quality and context engine. It validates
-
-the client, classifies their industry, and intelligently fills information gaps.</div>
+                <div class="item-value">Acts as the data quality and context engine. It identifies the client/company, brand, and product from the brief, pulls their record, classifies their industry, and intelligently fills information gaps.</div>
                 <div class="item-key">Primary Goal:</div>
                 <div class="item-value">To take a structured JSON brief and return a fully populated,
  validated, and contextually enriched version ready for strategic analysis.</div>
@@ -874,36 +872,26 @@ the client, classifies their industry, and intelligently fills information gaps.
 
         <div class="agent-card">
             <h4 id="validation-enrichment-core-functionality">Core Functionality & Workflow</h4>
-            <p>The agent receives a structured JSON from the interpreter. It first authenticates the
- client against a database. Then, it classifies the client's industry. Finally, it iterates
- through all null fields in the JSON, calling an external knowledge base to retrieve and fill
- in default values based on established business logic and matrices.</p>
+            <p>The agent receives a structured JSON from the interpreter. It first identifies the client/company, brand, and product from the `client_information` field. It then uses the identified client/company to pull the corresponding record from a client databank. Then, it classifies the client's industry. Finally, it iterates through all null fields in the JSON, calling an external knowledge base to retrieve and fill in default values based on established business logic and matrices.</p>
             <div class="workflow-steps">
                 <div class="workflow-step">
                     <div class="workflow-step-number">1</div>
                     <div class="workflow-step-content">
-                        <strong>Thought:</strong> I have received the input JSON. My first step is to authenticate the
- client.
-
-<strong>Action:</strong> Call queryClientDatabase with the client_information.
+                        <strong>Thought:</strong> I have received the input JSON. My first step is to identify the client/company, brand, and product from the `client_information` field.
+                        <strong>Action:</strong> Extract 'client_company', 'brand_name', 'product_name' from the brief's 'client_information' field. Call queryClientDatabase with the identified 'client_company' to retrieve its record.
                     </div>
                 </div>
                 <div class="workflow-step">
                     <div class="workflow-step-number">2</div>
                     <div class="workflow-step-content">
-                        <strong>Observation:</strong> Receive the output from the tool.
+                        <strong>Observation:</strong> Receive the output (client record) from the tool.
                     </div>
                 </div>
                 <div class="workflow-step">
                     <div class="workflow-step-number">3</div>
                     <div class="workflow-step-content">
-                        <strong>Thought:</strong> Now I must classify the client's industry.
-
-<strong>Action:</strong> Call get Knowledge BaseRule with ruleName:
-
-'INDUSTRY_CLASSIFICATION_LIST'. Compare the client info to the returned list
-
-and add the "client_industry": "Classified Industry" key-value pair to the JSON.
+                        <strong>Thought:</strong> Now I must classify the client's industry using the retrieved client record.
+                        <strong>Action:</strong> Call getKnowledge BaseRule with ruleName: 'INDUSTRY_CLASSIFICATION_LIST'. Compare the client info from the record to the returned list and add the "client_industry": "Classified Industry" key-value pair to the JSON.
                     </div>
                 </div>
                 <div class="workflow-step">
@@ -949,9 +937,7 @@ modified, enriched version of that same object.</li>
                 <li>Tool Usage:
 
                     <ul>
-                        <li>You must use the queryClientDatabase (clientName: string) tool for client
-
-authentication.</li>
+                        <li>You must use the queryClientDatabase (clientName: string) tool to retrieve the client's record from the client bank.</li>
                         <li>You must use the getKnowledge BaseRule (ruleName: string, parameters: object)
  tool to fetch all default values, matrices, and logic from the centralized
  knowledge base (representing the MCP/Google Sheet).</li>
@@ -961,16 +947,15 @@ authentication.</li>
             </ol>
             <h5>Step-by-Step Reasoning (ReAct Pattern):</h5>
             <ol>
-                <li>Thought: I have received the input JSON. My first step is to authenticate the
- client.
+                <li>Thought: I have received the input JSON. My first step is to identify the client/company, brand, and product from the `client_information` field.
 
-Action: Call queryClientDatabase with the client_information.</li>
-                <li>Observation: Receive the output from the tool.</li>
-                <li>Thought: Now I must classify the client's industry.
+Action: Extract 'client_company', 'brand_name', 'product_name' from the brief's 'client_information' field. Call queryClientDatabase with the identified 'client_company' to retrieve its record.</li>
+                <li>Observation: Receive the output (client record) from the tool.</li>
+                <li>Thought: Now I must classify the client's industry using the retrieved client record.
 
 Action: Call get Knowledge BaseRule with ruleName:
 
-'INDUSTRY_CLASSIFICATION_LIST'. Compare the client info to the returned list
+'INDUSTRY_CLASSIFICATION_LIST'. Compare the client info from the record to the returned list
 
 and add the "client_industry": "Classified Industry" key-value pair to the JSON.</li>
                 <li>Thought: Next, I will systematically check for null values and fill them by querying
@@ -1006,7 +991,7 @@ You are the  Validation & Enrichment Agent , an analytical Al that acts as a Dat
 
 2. **Tool Usage:**
 
-* You must use the 'queryClientDatabase (clientName: string) tool for client authentication.
+* You must use the 'queryClientDatabase (clientName: string) tool to retrieve the client's record from the client bank.
 
 * You must use the 'getKnowledge BaseRule (ruleName: string, parameters: object) tool to fetch all
  default values, matrices, and logic from the centralized knowledge base (representing the
@@ -1016,16 +1001,16 @@ You are the  Validation & Enrichment Agent , an analytical Al that acts as a Dat
 
 [Step-by-Step Reasoning (ReAct Pattern)]
 
-1. **Thought:** I have received the input JSON. My first step is to authenticate the client.
+1. **Thought:** I have received the input JSON. My first step is to identify the client/company, brand, and product from the `client_information` field.
 
-**Action:** Call  queryClientDatabase' with the  client_information'.
+**Action:** Extract 'client_company', 'brand_name', 'product_name' from the brief's 'client_information' field. Call  queryClientDatabase' with the identified 'client_company' to retrieve its record.
 
-2. **Observation:** Receive the output from the tool.
+2. **Observation:** Receive the output (client record) from the tool.
 
-3. **Thought:** Now I must classify the client's industry.
+3. **Thought:** Now I must classify the client's industry using the retrieved client record.
 
 **Action:** Call  getKnowledgeBaseRule with 'ruleName: 'INDUSTRY_CLASSIFICATION_LIST".
- Compare the client info to the returned list and add the "client_industry": "Classified Industry"
+ Compare the client info from the record to the returned list and add the "client_industry": "Classified Industry"
  key-value pair to the JSON.
 
 4. **Thought:** Next, I will systematically check for  null' values and fill them by querying the
@@ -1057,7 +1042,7 @@ You are the  Validation & Enrichment Agent , an analytical Al that acts as a Dat
             <h4 id="validation-enrichment-tools">Required Tools & Capabilities (MCP Tools)</h4>
             <ul>
                 <li>queryClientDatabase (clientName: string): Queries the client databank via MCP to
- authenticate the client and retrieve historical data.</li>
+ retrieve the client's record and historical data.</li>
                 <li>getKnowledge BaseRule(ruleName: string, parameters: object): Retrieves a specific rule,
  default, or logic matrix from the external knowledge base (MCP/Google Sheet).</li>
             </ul>
@@ -1071,6 +1056,38 @@ You are the  Validation & Enrichment Agent , an analytical Al that acts as a Dat
  campaign_type, tactics) and a new client_industry field added. The output schema is
  identical to the input schema, just with fewer null values.</li>
             </ul>
+        </div>
+
+        <div class="agent-card">
+            <h4 id="validation-enrichment-output-schema">Output Schema</h4>
+            <div class="code-block-container">
+                <pre id="validation-enrichment-output-schema" class="json-schema"><code><span class="json-punctuation">{</span>
+    <span class="json-key">"core_information"</span><span class="json-punctuation">: {</span>
+        <span class="json-key">"client_information"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"platform_channel"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"primary_goal"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"kpis"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"budget"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"duration"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"target_kpis"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"audience_targeting"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"location_targeting"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"channel"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"campaign_type"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"tactics"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"buying_strategy"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span>
+    <span class="json-punctuation">},</span>
+    <span class="json-key">"supplementary_information"</span><span class="json-punctuation">: {</span>
+        <span class="json-key">"secondary_objectives"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"previous_campaign_results"</span><span class="json-punctuation">: </span><span class="json-string">"string | null"</span><span class="json-punctuation">,</span>
+        <span class="json-key">"competitor_brands"</span><span class="json-punctuation">: </span><span class="json-string">"string[] | null"</span>
+    <span class="json-punctuation">}</span>
+<span class="json-punctuation">}</span></code></pre>
+                <button class="copy-button" onclick="copyCode('validation-enrichment-output-schema')">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                    Copy
+                </button>
+            </div>
         </div>
 
         <div class="agent-card">
@@ -1430,9 +1447,9 @@ plan_b_recommended_data.</li>
                 <li>Thought: Now I will extract all parameters from the final campaignData object.</li>
                 <li>Thought: I need to create a campaign blueprint for each platform and generate a
 
-standardized campaign name.</li>
+standardized campaign name.
 
- <li>Action: Generate name:
+Action: Generate name:
 
 {primary_goal}_{kpi}_{platform_channel}_{campaign_type}_{tactics}_{brand}_{location_targeting}_{audience_targeting}_{date}_{buying_strategy}</li>
                 <li>Thought: I will structure the final campaign object.
