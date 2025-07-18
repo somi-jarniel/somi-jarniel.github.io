@@ -159,6 +159,64 @@
                     </ul>
                 </div>
                 <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">The Docker-Powered Agentic Architecture</h3>
+                    <p class="text-gray-700 mb-4">We will build our system using a modern, containerized architecture. Docker Compose allows us to define and run our multi-component application—the ADK Agent Host and the MCP Tool Server—as isolated yet connected services. This approach simplifies setup, ensures consistency across environments, and is the recommended pattern by Docker for agentic development. [5, 6]</p>
+                    <div class="w-full bg-propelrr-gray border border-gray-200 rounded-lg p-6">
+                        <div class="arch-box border-gray-400 text-gray-700 bg-gray-200">Human User</div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="arch-box border-propelrr-accent text-blue-800 bg-blue-100">
+                            ADK Agent Host (Orchestrator)
+                            <div class="arch-arrow h-4"></div>
+                            <div class="flex justify-around space-x-2 mt-2">
+                                <div class="arch-box text-sm flex-1 border-yellow-500 text-yellow-800 bg-yellow-100">Worker Agent 1</div>
+                                <div class="arch-box text-sm flex-1 border-yellow-500 text-yellow-800 bg-yellow-100">Worker Agent 2</div>
+                            </div>
+                        </div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="arch-box border-teal-500 text-teal-800 bg-teal-100">MCP Tool Server</div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="flex justify-around space-x-2 mt-2">
+                            <div class="arch-box text-sm flex-1 border-purple-400 text-purple-800 bg-purple-100">Databases</div>
+                            <div class="arch-box text-sm flex-1 border-purple-400 text-purple-800 bg-purple-100">External APIs</div>
+                        </div>
+                        <div class="arch-arrow h-4"></div>
+                        <div class="arch-box border-orange-500 text-orange-800 bg-orange-100">LLM (e.g., Gemini)</div>
+                    </div>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-xl font-semibold mb-3">Full System Request Flow</h3>
+                    <p class="text-gray-700 mb-4">Here is the detailed, end-to-end flow of a request through our multi-agent, containerized system.</p>
+                    <div class="space-y-3 text-sm">
+                        <div class="flow-arrow border-l-4 border-gray-400 pl-4 py-2 bg-gray-50 rounded-r-lg">
+                            <strong class="text-gray-800">1. User Prompt:</strong> A user gives a high-level goal to the ADK Agent Host.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">2. Orchestrator Planning:</strong> The `ProjectManagerAgent` (orchestrator) receives the goal. It analyzes the request and its instruction set to create a multi-step plan.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">3. Task Delegation:</strong> The orchestrator delegates the first task (e.g., "create a user record") to a specialized worker, the `DatabaseAgent`.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">4. Tool Selection:</strong> The `DatabaseAgent` determines it needs the `create_records` tool and prepares the parameters.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">5. MCP Tool Call:</strong> The agent's `MCPToolset` makes an HTTP POST request from the `adk-agent` container to the `mcp-server` container via Docker's internal network (e.g., `http://mcp-server:8000/tools/db/create_records`).
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">6. Server Execution:</strong> The MCP Server (FastAPI) validates the request and calls the appropriate service function.
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">7. External Interaction:</strong> The service function interacts with the external resource (e.g., a MongoDB database).
+                        </div>
+                        <div class="flow-arrow border-l-4 border-teal-400 pl-4 py-2 bg-teal-50 rounded-r-lg">
+                            <strong class="text-teal-800">8. Server Response:</strong> The MCP Server sends the result back to the ADK Agent Host as an HTTP response.
+                        </div>
+                        <div class="border-l-4 border-blue-400 pl-4 py-2 bg-blue-50 rounded-r-lg">
+                            <strong class="text-blue-800">9. Observation & Iteration:</strong> The `DatabaseAgent` observes the result, reports success to the `ProjectManagerAgent`, which then proceeds to the next step in its plan (e.g., delegating to the `CampaignAgent`). This loop continues until the goal is complete.
+                        </div>
+                    </div>
+                </div>
+                 <div class="content-card p-6">
                     <h3 class="text-xl font-semibold mb-3">Recommended Project Structure</h3>
                     <p class="text-gray-700 mb-4">To keep our system organized and maintainable, we'll use a monorepo structure with a root `docker-compose.yml` file orchestrating our two main services: the ADK Agent and the MCP Server. This pattern is directly inspired by the official Docker Compose for Agents examples, adapted for a more modular, production-oriented setup. [4, 6]</p>
                     <div class="bg-propelrr-dark text-white p-4 rounded-md text-sm overflow-x-auto">
@@ -510,53 +568,50 @@ class ProjectManagerAgent:
     def __init__(self):
         self.orchestrator = LlmAgent(
             name="ProjectManagerAgent",
-            instruction=load_instruction("project_manager.txt")
+            instruction=load_instruction("project_manager.txt"),
+            # The orchestrator's tools are the other agents
+            tools=[db_agent, campaign_agent]
         )
-        self.worker_agents = {"DatabaseAgent": db_agent, "CampaignAgent": campaign_agent}
         print("-> Agent 'ProjectManagerAgent' and its workers are ready.")
 
     async def run(self, goal: str):
-        # This method simulates the hierarchical workflow.
-        print(f"\n[ProjectManagerAgent] Received goal, creating plan...")
-        plan = [
-            "Delegate user creation to DatabaseAgent.",
-            "Delegate campaign creation to CampaignAgent using the new user's info."
-        ]
-        print(f"[ProjectManagerAgent] Plan created: {plan}")
-
+        """Runs the orchestrator agent with a given goal."""
+        print(f"\n[ProjectManagerAgent] Running with goal: '{goal}'")
+        # In a real ADK application, this call would trigger the full
+        # reasoning loop, where the LLM decides which worker agent to call.
+        # The output would be the final result after the multi-step plan is executed.
+        # final_response = await self.orchestrator.run(prompt=goal)
+        # return final_response
+        
+        # --- Simulation of the ADK's internal execution ---
+        print("[ProjectManagerAgent] SIMULATION: LLM plans to call DatabaseAgent.")
         db_prompt = "Create a new record in the 'users' collection for 'Jane Doe' (jane.doe@example.com) with status 'vip'."
-        print(f"\n[ProjectManagerAgent] Delegating to DatabaseAgent: '{db_prompt}'")
-        # In a real app, this would be: db_result = await db_agent.run(db_prompt)
-        db_result = "{'success': true, 'count': 1}" # Simulated result
-        print(f"[ProjectManagerAgent] Observed result from DatabaseAgent: {db_result}")
+        # db_result = await db_agent.run(prompt=db_prompt)
+        db_result = "{'success': true, 'count': 1}"
+        print(f"[ProjectManagerAgent] SIMULATION: Observed result from DatabaseAgent: {db_result}")
 
+        print("[ProjectManagerAgent] SIMULATION: LLM plans to call CampaignAgent.")
         campaign_prompt = "Create a 'Welcome VIP' lead generation campaign on Meta."
-        print(f"\n[ProjectManagerAgent] Delegating to CampaignAgent: '{campaign_prompt}'")
-        # In a real app: campaign_result = await campaign_agent.run(campaign_prompt)
-        campaign_result = "{'campaign_id': '12345', 'status': 'PAUSED'}" # Simulated result
-        print(f"[ProjectManagerAgent] Observed result from CampaignAgent: {campaign_result}")
+        # campaign_result = await campaign_agent.run(prompt=campaign_prompt)
+        campaign_result = "{'campaign_id': '12345', 'status': 'PAUSED'}"
+        print(f"[ProjectManagerAgent] SIMULATION: Observed result from CampaignAgent: {campaign_result}")
 
-        final_report = f"Successfully created user and launched campaign {campaign_result}."
-        return final_report
+        return f"Successfully created user and launched campaign {campaign_result}."
 </code></pre>
                             </div>
                             <div class="code-content" id="adk-instructions" style="display: none;">
 <pre class="text-sm text-white overflow-x-auto"><code class="language-text">
 # adk-marketing-agent/instructions/project_manager.txt
-
 ## Persona
 You are a highly efficient project manager for a digital marketing team...
-
 ## Core Workflow
 1.  **REASON:** Analyze the user's goal...
 2.  **DELEGATE:** For each step...
 3.  **OBSERVE:** Wait for the specialist...
 4.  **RESPOND:** Once all steps are complete...
-
 ## Delegation Rules & Team Capabilities
 -   **`DatabaseAgent`:** For any tasks involving creating, reading, updating, or deleting records...
 -   **`CampaignAgent`:** For any tasks involving the creation or management of marketing campaigns...
-
 ## Constraints
 -   You must process steps sequentially...
 -   If any specialist agent reports an error...
