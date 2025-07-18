@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
-    <!-- Application Structure Plan: The SPA is designed as a comparative narrative. It starts with a high-level overview, then uses a toggle to let users switch between a 'Generative AI' view and an 'Agentic AI' view. Each view presents a layered breakdown of the respective tech stack. This is followed by new, detailed sections on Use Cases, Risks & Challenges, and Future Trends, each with interactive elements like accordions to manage the density of information. This structure was chosen to guide the user from a high-level comparison to deeper, thematic explorations, making the comprehensive research digestible within a single page. -->
-    <!-- Visualization & Content Choices: Report Info: Comprehensive analysis of Generative vs. Agentic AI. Goal: Present a deep-dive comparison covering stacks, applications, risks, and future outlook. Viz/Presentation Method: Interactive cards, toggle switch, accordions for detailed text, and multiple charts (radar for complexity, doughnut for use cases, bar for risk profiles). Interaction: The main toggle switches between core stack views. Accordions in new sections allow users to expand topics of interest without being overwhelmed. Charts provide quick visual summaries. Justification: This layered approach—toggle for broad comparison, accordions for depth—is ideal for a content-rich report. It respects user attention by keeping the initial view clean while offering easy access to extensive details. New charts help visualize abstract concepts from the research. Library/Method: Chart.js for all charts due to its versatility and ease of use. -->
+    <!-- Application Structure Plan: The SPA is designed as a comparative narrative. It starts with a high-level overview, then uses a toggle to let users switch between a 'Generative AI' view and an 'Agentic AI' view. Each view presents a layered breakdown of the respective tech stack. This is followed by new, detailed sections on Use Cases, Risks & Challenges, and Future Trends, each with interactive elements like accordions to manage the density of information. A final section provides all source links. This structure was chosen to guide the user from a high-level comparison to deeper, thematic explorations and finally to the source material, making the comprehensive research digestible and transparent. -->
+    <!-- Visualization & Content Choices: Report Info: Comprehensive analysis of Generative vs. Agentic AI. Goal: Present a deep-dive comparison covering stacks, applications, risks, and future outlook, with full source attribution. Viz/Presentation Method: Interactive cards, toggle switch, accordions for detailed text, multiple charts, and a final reference list. Interaction: The main toggle switches between core stack views. Accordions in new sections allow users to expand topics of interest. Charts provide quick visual summaries. The reference list provides direct access to source material. Justification: This layered approach—toggle for broad comparison, accordions for depth, and references for validation—is ideal for a content-rich report. It respects user attention by keeping the initial view clean while offering easy access to extensive details and sources. Library/Method: Chart.js for all charts due to its versatility and ease of use. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -200,6 +200,25 @@
                     <h3 class="font-bold text-xl mb-2">"Agent-Ready" Infrastructure</h3>
                     <p class="text-gray-600">The key competitive differentiator will be a modular, API-driven, observable, and secure enterprise architecture that can support autonomous agents.</p>
                 </div>
+            </div>
+        </section>
+
+        <section class="mt-16 border-t pt-10">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-10">Research & Resources</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-8">This interactive report was synthesized from a variety of expert sources and analyses. The following resources provide further reading and form the basis of the information presented.</p>
+            <div class="max-w-4xl mx-auto">
+                <ul class="space-y-3">
+                    <li><a href="https://www.teradata.com/insights/ai-and-machine-learning/the-generative-ai-technology-stack" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">The Generative AI Technology Stack - Teradata</a></li>
+                    <li><a href="https://flyaps.com/blog/generative-ai-tech-stack/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Navigating the Generative AI Tech Stack: A Comprehensive Guide - Flyaps</a></li>
+                    <li><a href="https://www.wing.vc/content/the-agentic-ai-runtime-stack" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">The Agentic AI Runtime Stack - Wing Venture Capital</a></li>
+                    <li><a href="https://medium.com/@shiv0307/the-agentic-ai-stack-a-holistic-framework-for-ai-development-and-deployment-2ebaf8ec7f8f" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">The Agentic AI Stack: A Holistic Framework - Medium</a></li>
+                    <li><a href="https://www.auxiliobits.com/blog/the-tech-stack-behind-agentic-ai-in-the-enterprise-frameworks-apis-and-ecosystems/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">The Tech Stack Behind Agentic AI in the Enterprise - auxiliobits</a></li>
+                    <li><a href="https://www.ema.co/blog/agentic-ai/agentic-vs-non-agentic-systems-how-tech-stacks-differ-in-the-new-paradigm/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Agentic vs Non-Agentic Systems: How Tech Stacks Differ - Ema</a></li>
+                    <li><a href="https://www.ibm.com/think/insights/top-ai-agent-frameworks" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">AI Agent Frameworks: Choosing the Right Foundation - IBM</a></li>
+                    <li><a href="https://www.thomsonreuters.com/en/insights/articles/agentic-ai-vs-generative-ai-the-core-differences" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Agentic AI vs. generative AI: The core differences - Thomson Reuters</a></li>
+                    <li><a href="https://www.publicissapient.com/insights/agentic-ai-vs-generative-ai" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Agentic AI vs. Generative AI: The Evolution of Decision-making - Publicis Sapient</a></li>
+                    <li><a href="https://aisera.com/blog/what-is-agentic-ai/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">What is Agentic AI? - Aisera</a></li>
+                </ul>
             </div>
         </section>
 
