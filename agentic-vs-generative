@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic vs. Generative AI Tech Stacks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
+    <!-- Application Structure Plan: The SPA is designed as a comparative narrative. It starts with a high-level overview, then uses a toggle to let users switch between a 'Generative AI' view and an 'Agentic AI' view. Each view presents a layered breakdown of the respective tech stack. This is followed by new, detailed sections on Use Cases, Risks & Challenges, and Future Trends, each with interactive elements like accordions to manage the density of information. This structure was chosen to guide the user from a high-level comparison to deeper, thematic explorations, making the comprehensive research digestible within a single page. -->
+    <!-- Visualization & Content Choices: Report Info: Comprehensive analysis of Generative vs. Agentic AI. Goal: Present a deep-dive comparison covering stacks, applications, risks, and future outlook. Viz/Presentation Method: Interactive cards, toggle switch, accordions for detailed text, and multiple charts (radar for complexity, doughnut for use cases, bar for risk profiles). Interaction: The main toggle switches between core stack views. Accordions in new sections allow users to expand topics of interest without being overwhelmed. Charts provide quick visual summaries. Justification: This layered approach—toggle for broad comparison, accordions for depth—is ideal for a content-rich report. It respects user attention by keeping the initial view clean while offering easy access to extensive details. New charts help visualize abstract concepts from the research. Library/Method: Chart.js for all charts due to its versatility and ease of use. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .toggle-bg:after {
+            content: '';
+            @apply absolute top-1 left-1 bg-white border border-gray-300 rounded-full h-7 w-7 transition-transform;
+        }
+        input:checked + .toggle-bg:after {
+            transform: translateX(100%);
+            border-color: #4A90E2;
+        }
+        input:checked + .toggle-bg {
+            @apply bg-blue-500;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 100%;
+            max-width: 600px;
+            max-height: 400px;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .accordion-button.open + .accordion-content {
+            max-height: 1000px; /* Adjust as needed */
+        }
+        .accordion-button .arrow {
+            transition: transform 0.3s ease;
+        }
+        .accordion-button.open .arrow {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800">Generative vs. Agentic AI</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">An Architectural Deep Dive into Technology Stacks, Applications, and Risks</p>
+            <p class="mt-4 text-base text-gray-500 max-w-3xl mx-auto">This interactive report synthesizes a comprehensive analysis of Generative and Agentic AI. Explore their core technologies, real-world applications, critical challenges, and future trajectory.</p>
+        </header>
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">Core Technology Stack Comparison</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-8">Agentic AI is not a replacement for Generative AI, but an architectural superstructure built upon it. Use the toggle to switch perspectives and see how the 'Creator's Toolkit' is extended to build the 'Doer's Architecture'.</p>
+            <div class="flex justify-center items-center space-x-4 mb-12">
+                <span id="gen-ai-label" class="font-semibold text-lg text-blue-600">Generative AI Stack</span>
+                <label for="ai-toggle" class="flex items-center cursor-pointer">
+                    <div class="relative">
+                        <input type="checkbox" id="ai-toggle" class="sr-only">
+                        <div class="toggle-bg block bg-gray-200 w-14 h-9 rounded-full"></div>
+                    </div>
+                </label>
+                <span id="agent-ai-label" class="font-semibold text-lg text-gray-400">Agentic AI Stack</span>
+            </div>
+            <main id="content-area" class="w-full">
+                <!-- Content will be dynamically inserted here -->
+            </main>
+        </section>
+        
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-10">Applications in Practice</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-8">The architectural differences lead to distinct applications. Generative AI augments human tasks related to content, while Agentic AI automates entire business processes.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="font-bold text-2xl mb-4 text-blue-600">Generative AI Use Cases</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-lg">Content & Marketing</h4>
+                            <p class="text-gray-600 text-sm">Automates creation of marketing copy, blog posts, and social media updates, allowing teams to focus on strategy.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Enhanced Customer Experience</h4>
+                            <p class="text-gray-600 text-sm">Powers sophisticated chatbots, summarizes customer feedback, and generates personalized communications.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Developer & Employee Productivity</h4>
+                            <p class="text-gray-600 text-sm">Accelerates software development with code generation and assists knowledge workers by summarizing reports and answering queries.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold text-2xl mb-4 text-green-600">Agentic AI Use Cases</h3>
+                     <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-lg">Advanced Customer Service</h4>
+                            <p class="text-gray-600 text-sm">Moves beyond answering questions to resolving issues autonomously, like processing a return or re-booking a flight.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">IT & Cybersecurity Operations</h4>
+                            <p class="text-gray-600 text-sm">Proactively monitors networks for threats, automates incident response, and manages system patches without human intervention.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Supply Chain & Manufacturing</h4>
+                            <p class="text-gray-600 text-sm">Performs dynamic route optimization, predictive maintenance on equipment, and automated inventory management.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-10">Critical Challenges & Risk Profiles</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-8">Agentic AI inherits all risks from Generative AI and introduces new, amplified operational risks due to its ability to take autonomous action. Understanding this shift from informational to operational risk is critical for governance.</p>
+            <div class="max-w-4xl mx-auto space-y-4">
+                <div class="card p-4">
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4">
+                        <span class="font-semibold text-xl text-blue-600">Generative AI Risks (Informational)</span>
+                        <span class="arrow text-2xl text-blue-600">&rarr;</span>
+                    </button>
+                    <div class="accordion-content px-4 pb-4">
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Data Quality and Bias:</strong> Models reproduce and amplify biases present in their training data, leading to unfair or inaccurate outputs.</li>
+                            <li><strong>Hallucinations & Inaccuracy:</strong> Tendency to generate plausible but factually incorrect information, making it unreliable for mission-critical facts without guardrails.</li>
+                            <li><strong>Ethical & Regulatory Concerns:</strong> Issues around data privacy, transparency (disclosing AI interaction), and accountability for harmful content.</li>
+                            <li><strong>Security Vulnerabilities:</strong> Susceptible to prompt injection attacks and represents a data security risk if breached.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card p-4">
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4">
+                        <span class="font-semibold text-xl text-red-600">Agentic AI Risks (Operational & Amplified)</span>
+                        <span class="arrow text-2xl text-red-600">&rarr;</span>
+                    </button>
+                    <div class="accordion-content px-4 pb-4">
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>The "Black Box" Problem:</strong> Extreme difficulty in tracing an agent's reasoning path for a decision, creating major compliance and trust issues.</li>
+                            <li><strong>Accountability & Governance Gaps:</strong> A critical vacuum of liability. Who is responsible if an agent causes financial loss or system damage?</li>
+                            <li><strong>Unforeseen Systemic Risks:</strong> Interactions between multiple agents can lead to unpredictable, cascading failures (e.g., a flash crash in financial markets).</li>
+                            <li><strong>Security & Identity Crisis:</strong> Agents require robust authentication and authorization, but current systems are built for humans, creating severe security gaps.</li>
+                            <li><strong>Reliability and Predictability:</strong> The autonomy that makes agents powerful also makes them unpredictable, which is a risk for mission-critical, deterministic processes.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-16 text-center">
+             <h2 class="text-3xl font-bold text-gray-800 mb-4">Conceptual Complexity Comparison</h2>
+             <p class="max-w-3xl mx-auto text-gray-600 mb-8">This chart visualizes the relative focus and complexity of each AI type across different operational domains. Generative AI excels in creative tasks, while Agentic AI requires a more complex architecture for planning, memory, and tool integration to achieve its goals.</p>
+             <div class="chart-container">
+                <canvas id="complexityChart"></canvas>
+            </div>
+        </section>
+        
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-10">The Future: Convergence and Next-Gen Architectures</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-8">The distinction between Generative and Agentic AI is blurring. The future lies in their convergence, leading to more sophisticated, collaborative, and autonomous intelligent systems. Preparing for this future requires a strategic focus on building "agent-ready" enterprise infrastructure.</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">Multi-Agent Systems</h3>
+                    <p class="text-gray-600">The dominant paradigm will shift from single agents to teams of specialized agents collaborating to solve complex problems, requiring advanced orchestration.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">Standardization</h3>
+                    <p class="text-gray-600">Protocols like Google's proposed Agent-to-Agent (A2A) will be crucial for creating a common language, enabling agents from different systems to interact securely and reliably.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">"Agent-Ready" Infrastructure</h3>
+                    <p class="text-gray-600">The key competitive differentiator will be a modular, API-driven, observable, and secure enterprise architecture that can support autonomous agents.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const generativeContent = `
+            <div id="generative-stack" class="fade-in">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="card p-6">
+                        <h3 class="font-bold text-xl mb-2 text-gray-800">1. Infrastructure Layer</h3>
+                        <p class="text-gray-600 mb-4">The foundation providing raw power for massive model training.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">GPUs/TPUs</span> High-performance computing clusters.</li>
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Cloud Platforms</span> AWS, Google Cloud, Azure.</li>
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Data Processing</span> Apache Spark, Hadoop.</li>
+                        </ul>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="font-bold text-xl mb-2 text-gray-800">2. Model Layer</h3>
+                        <p class="text-gray-600 mb-4">The core of creation, where content is generated.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Frameworks</span> TensorFlow, PyTorch.</li>
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Architectures</span> Transformers (for LLMs), GANs.</li>
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Models</span> GPT series, Gemini, DALL-E.</li>
+                        </ul>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="font-bold text-xl mb-2 text-gray-800">3. Application Layer</h3>
+                        <p class="text-gray-600 mb-4">Making the model accessible and usable for specific tasks.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">APIs</span> REST APIs for model interaction.</li>
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">App Frameworks</span> Basic LangChain, Streamlit.</li>
+                            <li class="flex items-center"><span class="font-mono bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Deployment</span> Docker, Kubernetes.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const agenticContent = `
+            <div id="agentic-stack" class="fade-in">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="card p-6">
+                        <h3 class="font-bold text-xl mb-2 text-gray-800">1. Reasoning Engine</h3>
+                        <p class="text-gray-600 mb-4">The "brain" that powers understanding and decision-making, typically a powerful LLM.</p>
+                        <ul class="space-y-2 text-sm">
+                             <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Task Decomposition</span> Breaks down high-level goals.</li>
+                             <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Tool Selection</span> Decides which tool to use for a task.</li>
+                        </ul>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="font-bold text-xl mb-2 text-gray-800">2. Orchestration & Memory</h3>
+                        <p class="text-gray-600 mb-4">Manages planning, state, and context retention over time.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Frameworks</span> LangChain, CrewAI, AutoGen.</li>
+                            <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Vector DBs</span> Pinecone, FAISS for long-term memory.</li>
+                            <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">State Mgmt</span> Tracks progress and workflow state.</li>
+                        </ul>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="font-bold text-xl mb-2 text-gray-800">3. Tools & Action Layer</h3>
+                        <p class="text-gray-600 mb-4">Provides the ability to interact with the world and execute tasks.</p>
+                        <ul class="space-y-2 text-sm">
+                           <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">API Connectors</span> "Actuators" to interact with software.</li>
+                           <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Code Execution</span> Runs Python scripts for data analysis.</li>
+                           <li class="flex items-center"><span class="font-mono bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">Web Browsing</span> Gives agents access to live internet data.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('ai-toggle');
+            const contentArea = document.getElementById('content-area');
+            const genAiLabel = document.getElementById('gen-ai-label');
+            const agentAiLabel = document.getElementById('agent-ai-label');
+
+            function updateContent() {
+                if (toggle.checked) {
+                    contentArea.innerHTML = agenticContent;
+                    agentAiLabel.classList.remove('text-gray-400');
+                    agentAiLabel.classList.add('text-green-600');
+                    genAiLabel.classList.remove('text-blue-600');
+                    genAiLabel.classList.add('text-gray-400');
+                } else {
+                    contentArea.innerHTML = generativeContent;
+                    genAiLabel.classList.remove('text-gray-400');
+                    genAiLabel.classList.add('text-blue-600');
+                    agentAiLabel.classList.remove('text-green-600');
+                    agentAiLabel.classList.add('text-gray-400');
+                }
+            }
+
+            toggle.addEventListener('change', updateContent);
+            updateContent();
+
+            const accordions = document.querySelectorAll('.accordion-button');
+            accordions.forEach(button => {
+                button.addEventListener('click', () => {
+                    button.classList.toggle('open');
+                });
+            });
+
+            const ctx = document.getElementById('complexityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Content Creation', 'Reasoning & Planning', 'Tool Integration', 'Autonomous Action', 'Memory & Context'],
+                    datasets: [{
+                        label: 'Generative AI',
+                        data: [9, 4, 3, 2, 5],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    }, {
+                        label: 'Agentic AI',
+                        data: [6, 9, 9, 9, 8],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: { font: { size: 12 }, color: '#383838' },
+                            ticks: { backdropColor: '#FDFBF8', color: '#6b7280', stepSize: 2 },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { size: 14 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.r !== null) { label += context.parsed.r; }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
