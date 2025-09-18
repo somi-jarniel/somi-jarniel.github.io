@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI - Mediaplan Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030712; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #111827; } ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .nav-btn { font-weight: 600; padding: 0.6rem 1.25rem; border-radius: 0.5rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        input[type="checkbox"].gender-toggle { display: none; }
+        input[type="checkbox"].gender-toggle + label { cursor: pointer; border: 1px solid #4b5563; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: all 0.2s; }
+        input[type="checkbox"].gender-toggle:checked + label { background-color: #3b82f6; border-color: #3b82f6; color: white; }
+        .campaign-card-body { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .campaign-card.active .campaign-card-body { max-height: 1500px; }
+        .accordion-chevron { transition: transform 0.3s ease-in-out; }
+        .campaign-card.active .accordion-chevron, .review-accordion.active .accordion-chevron { transform: rotate(180deg); }
+        .review-accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .review-accordion.active .review-accordion-body { max-height: 5000px; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-200">
+
+    <main class="container mx-auto p-4 md:p-8">
+        <h1 class="text-3xl font-bold text-white mb-8 text-center">Mediaplan Generator</h1>
+
+        <form id="campaign-form" class="bg-gray-900 border border-gray-800 p-6 md:p-8 rounded-2xl shadow-lg max-w-6xl mx-auto">
+            <div id="step-indicator" class="flex items-center justify-center mb-8 border-b border-gray-800 pb-6"></div>
+
+            <div data-step="1">
+                <h2 class="text-2xl font-semibold text-white">Step 1: Select Platform</h2>
+                <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button type="button" id="select-platform-meta" class="p-4 border-2 border-blue-500 bg-gray-800 rounded-lg text-center cursor-pointer hover:bg-gray-700/50 transition"><img src="https://www.svgrepo.com/show/424909/meta-logo-facebook-2.svg" alt="Meta Logo" class="h-10 mx-auto mb-2"><span class="font-semibold text-blue-300 text-sm">Meta</span></button>
+                </div>
+            </div>
+
+            <div data-step="2" class="hidden">
+                <h2 class="text-2xl font-semibold text-white">Step 2: Setup Accounts & Details</h2>
+                <div class="mt-6 space-y-6 bg-gray-950 border border-gray-800 p-6 rounded-xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="business-account" class="text-sm font-medium text-gray-400">Business Account</label><select id="business-account" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md"></select></div>
+                        <div><label for="ad-account" class="text-sm font-medium text-gray-400">Ad Account</label><select id="ad-account" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md" disabled></select></div>
+                        <div><label for="client-name" class="text-sm font-medium text-gray-400">Client</label><input id="client-name" type="text" placeholder="e.g., PGC" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md"></div>
+                        <div><label for="brand-name" class="text-sm font-medium text-gray-400">Brand</label><input id="brand-name" type="text" placeholder="e.g., ProtekTODO" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md"></div>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-between"><button type="button" class="nav-btn bg-gray-600 hover:bg-gray-500" data-target-step="1">&larr; Back</button><button type="button" class="nav-btn bg-blue-600 hover:bg-blue-500" data-target-step="3">Next: Create Campaigns &rarr;</button></div>
+            </div>
+
+            <div data-step="3" class="hidden">
+                <div class="flex justify-between items-center">
+                    <div><h2 class="text-2xl font-semibold text-white">Step 3: Create Campaigns</h2><p class="text-gray-400">Now building: <span id="current-version-label" class="font-bold text-blue-400">Version 1</span></p></div>
+                </div>
+                <div id="campaign-versions-container" class="mt-6">
+                    <div class="campaign-version-wrapper" data-version="1"><div class="campaign-container space-y-4"></div></div>
+                </div>
+                <div class="mt-6 border-t border-gray-800 pt-6">
+                    <button type="button" id="add-campaign-btn" class="w-full nav-btn bg-indigo-600 hover:bg-indigo-500 justify-center">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+                        Add Campaign
+                    </button>
+                </div>
+                <div class="mt-8 flex justify-between"><button type="button" class="nav-btn bg-gray-600 hover:bg-gray-500" data-target-step="2">&larr; Back</button><button type="button" class="nav-btn bg-blue-600 hover:bg-blue-500" data-target-step="4">Next: Set Budget &rarr;</button></div>
+            </div>
+
+            <div data-step="4" class="hidden"></div>
+            <div data-step="5" class="hidden"></div>
+            <div data-step="6" class="hidden text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <h2 class="mt-4 text-2xl font-semibold text-white">Success!</h2><p class="mt-2 text-gray-400">Your mediaplan brief has been generated in the console.</p>
+            </div>
+        </form>
+    </main>
+
+    <template id="campaign-card-template">
+        <div class="campaign-card bg-gray-950 border border-gray-800 rounded-xl fade-in">
+            <div class="campaign-card-header flex justify-between items-center p-4 cursor-pointer">
+                <h3 class="campaign-title text-lg font-bold text-white truncate pr-4">Campaign 1</h3>
+                <div class="flex items-center gap-4">
+                    <button type="button" class="duplicate-campaign-btn nav-btn bg-green-600 hover:bg-green-500 text-sm py-1 px-3">Duplicate</button>
+                    <button type="button" class="remove-campaign-btn nav-btn bg-red-800 hover:bg-red-700 text-sm py-1 px-3 disabled:opacity-50 disabled:cursor-not-allowed">Remove</button>
+                    <svg class="accordion-chevron w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                </div>
+            </div>
+            <div class="campaign-card-body px-4 pb-4 space-y-6">
+                <div class="bg-slate-800/50 p-4 rounded-lg"><h4 class="text-lg font-semibold text-white mb-4 border-b border-gray-700 pb-2">Identity</h4><div class="grid md:grid-cols-2 gap-4">
+                    <div><label class="text-sm font-medium text-gray-400">Product (Optional)</label><input type="text" name="product" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                    <div><label class="text-sm font-medium text-gray-400">Facebook Page</label><input type="text" name="fb_page" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                    <div><label class="text-sm font-medium text-gray-400">Campaign Type</label><select name="campaign_type" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"><option>Special</option><option>Amplification</option><option>BAU</option><option>Remarketing</option><option>Top-up</option></select></div>
+                    <div><label class="text-sm font-medium text-gray-400">Campaign Tactics</label><input type="text" name="campaign_tactics" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                </div></div>
+
+                <div class="bg-slate-800/50 p-4 rounded-lg"><h4 class="text-lg font-semibold text-white mb-4 border-b border-gray-700 pb-2">Objective, Bidding & Schedule</h4><div class="grid md:grid-cols-2 gap-4">
+                    <div><label class="text-sm font-medium text-gray-400">Campaign Objective</label><select name="campaign_objective" class="campaign-objective-select w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"><option>Awareness</option><option>Engagement</option><option>Sales</option></select></div>
+                    <div><label class="text-sm font-medium text-gray-400">Main KPI</label><select name="main_kpi" class="main-kpi-select w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></select></div>
+                    <div><label class="text-sm font-medium text-gray-400">Buying Strategy (Execution)</label><select name="buying_strategy_execution" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"><option>Auction</option><option>Reservation</option></select></div>
+                    <div><label class="text-sm font-medium text-gray-400">Buying Strategy (Forecasting)</label><select name="buying_strategy_forecasting" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"><option>Auction</option><option>Reservation</option></select></div>
+                    <div><label class="text-sm font-medium text-gray-400">Campaign Start</label><input type="date" name="campaign_start" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white [color-scheme:dark]"></div>
+                    <div><label class="text-sm font-medium text-gray-400">Campaign End</label><input type="date" name="campaign_end" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white [color-scheme:dark]"></div>
+                </div></div>
+
+                <div class="bg-slate-800/50 p-4 rounded-lg"><h4 class="text-lg font-semibold text-white mb-4 border-b border-gray-700 pb-2">Geo & Demographics</h4><div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div><label class="text-sm font-medium text-gray-400">Location ID</label><input type="text" name="location_targeting_identifier" placeholder="e.g., PH_National" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                    <div><label class="text-sm font-medium text-gray-400">Country</label><input type="text" name="location_targeting_country" value="PH" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                    <div><label class="text-sm font-medium text-gray-400">Region</label><input type="text" name="region" placeholder="Nationwide" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                    <div><label class="text-sm font-medium text-gray-400">Min Age</label><input type="number" name="min_age" value="18" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                    <div><label class="text-sm font-medium text-gray-400">Max Age</label><input type="number" name="max_age" value="55" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                    <div class="flex flex-col"><label class="text-sm font-medium text-gray-400">Gender</label><div class="flex items-center gap-2 mt-2">
+                        <input type="checkbox" name="gender" value="Male" id="gender_male_{id}" class="gender-toggle"><label for="gender_male_{id}" class="text-sm">Male</label>
+                        <input type="checkbox" name="gender" value="Female" id="gender_female_{id}" class="gender-toggle"><label for="gender_female_{id}" class="text-sm">Female</label>
+                    </div></div>
+                    <div class="lg:col-span-3"><label class="text-sm font-medium text-gray-400">Audience Targeting</label><input type="text" name="audience_targeting" placeholder="e.g., general" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div>
+                </div></div>
+                
+                <div class="bg-slate-800/50 p-4 rounded-lg"><h4 class="text-lg font-semibold text-white mb-4 border-b border-gray-700 pb-2">Detailed Audience</h4>
+                    <div class="audience-summary-display min-h-[4rem] bg-gray-900/50 p-3 rounded-md text-sm text-gray-500 italic">No detailed audience selected.</div>
+                    <button type="button" class="open-audience-builder-btn bg-indigo-600 text-white font-bold py-2 px-4 rounded-md w-full mt-4 hover:bg-indigo-500 transition">Configure Detailed Audience</button>
+                    <input type="hidden" name="audience_interests" class="audience-data"><input type="hidden" name="versioning" class="version-input">
+                    <input type="hidden" name="placement" value="Advantage+"><input type="hidden" name="platform" value="Meta">
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <div id="audience-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"></div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const appState = { currentStep: 1, currentVersion: 1, mediaplanVersions: [] };
+        const kpiOptions = { Awareness: ["Reach", "Impressions"], Engagement: ["Post Engagement", "Page Likes"], Sales: ["Purchase", "Leads", "Conversions"] };
+        const stepLabels = ['Platform', 'Setup', 'Create', 'Budget', 'Review'];
+        const form = document.getElementById('campaign-form');
+        const stepIndicatorContainer = document.getElementById('step-indicator');
+        const versionsContainer = document.getElementById('campaign-versions-container');
+        let activeCampaignCardForAudience = null;
+        let cardIdCounter = 0;
+
+        const mockFetch = (data, delay = 400) => new Promise(r => setTimeout(() => r(data), delay));
+        const fetchBusinessAccounts = async () => mockFetch([{ id: 'biz_123', name: 'Palawan Pawnshop - Palawan Express Pera Padala' }]);
+        const fetchAdAccounts = async (bizId) => mockFetch({ 'biz_123': [{ id: 'ad_acc_111', name: 'PPS-PEPP' }] }[bizId] || []);
+
+        const showStep = (step) => {
+            appState.currentStep = step;
+            document.querySelectorAll('[data-step]').forEach(el => el.classList.toggle('hidden', parseInt(el.dataset.step) !== step));
+            updateStepIndicator();
+            if (step === 4) generateBudgetPage();
+            if (step === 5) generateReviewPage();
+        };
+
+        const updateStepIndicator = () => {
+            stepIndicatorContainer.innerHTML = stepLabels.map((label, i) => {
+                const id = i + 1;
+                const icons = ['<path d="M2 13.5V4a2 2 0 012-2h16a2 2 0 012 2v9.5A2.5 2.5 0 0119.5 16H4.5A2.5 2.5 0 012 13.5zM2 7h20" />', '<path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />', '<path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />', '<path d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6A.75.75 0 012.25 5.25v-.75A.75.75 0 013 4.5A.75.75 0 013.75 4.5z" />', '<path d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25c.621 0 1.125.504 1.125 1.125v3.375c0 .621-.504 1.125-1.125 1.125h-1.5c-.621 0-1.125-.504-1.125-1.125v-3.375c0-.621.504-1.125 1.125-1.125h1.5z" />'];
+                let stateClass = 'text-gray-500', circleClass = 'bg-gray-700', content = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">${icons[i]}</svg>`;
+                if (id < appState.currentStep) { stateClass = 'text-green-500'; circleClass = 'bg-green-500'; content = '&#10003;'; } 
+                else if (id === appState.currentStep) { stateClass = 'text-blue-500'; circleClass = 'bg-blue-500'; }
+                const stepHtml = `<div class="flex items-center ${stateClass}"><div class="w-8 h-8 rounded-full ${circleClass} flex items-center justify-center font-bold text-white">${content}</div><span class="ml-3 font-semibold">${label}</span></div>`;
+                return stepHtml + (i < stepLabels.length - 1 ? `<div class="flex-auto border-t-2 border-gray-700 mx-4"></div>` : '');
+            }).join('');
+        };
+
+        const addCampaignCard = (version, duplicateOf = null) => {
+            const container = versionsContainer.querySelector(`[data-version="${version}"] .campaign-container`);
+            const campaignCount = (container.querySelectorAll('.campaign-card')?.length || 0) + 1;
+            const newCard = document.getElementById('campaign-card-template').content.cloneNode(true);
+            const cardEl = newCard.querySelector('.campaign-card');
+            cardEl.dataset.campaignId = campaignCount;
+            newCard.querySelector('.version-input').value = version;
+            cardIdCounter++;
+            newCard.querySelectorAll('input[name="gender"]').forEach(el => { el.id = `${el.id.split('_')[0]}_${el.value.toLowerCase()}_${cardIdCounter}`; });
+            newCard.querySelectorAll('label[for^="gender_"]').forEach(el => { el.htmlFor = `${el.htmlFor.split('_')[0]}_${el.htmlFor.split('_')[1]}_${cardIdCounter}`; });
+            
+            if (duplicateOf) {
+                duplicateOf.querySelectorAll('input:not([type="hidden"]), select').forEach(source => {
+                    const targets = cardEl.querySelectorAll(`[name="${source.name}"]`);
+                    if (targets.length > 0) {
+                        if (source.type === 'checkbox') { Array.from(targets).find(t => t.value === source.value).checked = source.checked; } 
+                        else { targets[0].value = source.value; }
+                    }
+                });
+                const sourceAudience = duplicateOf.querySelector('.audience-data').value;
+                cardEl.querySelector('.audience-data').value = sourceAudience;
+                am.renderSummaryOnCard(cardEl, JSON.parse(sourceAudience || '[]'));
+                newCard.querySelector('.campaign-title').textContent = `${duplicateOf.querySelector('.campaign-title').textContent} (Copy)`;
+            } else {
+                const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+                const oneMonthFromTomorrow = new Date(tomorrow); oneMonthFromTomorrow.setMonth(oneMonthFromTomorrow.getMonth() + 1);
+                newCard.querySelector('input[name="campaign_start"]').value = tomorrow.toISOString().split('T')[0];
+                newCard.querySelector('input[name="campaign_end"]').value = oneMonthFromTomorrow.toISOString().split('T')[0];
+                newCard.querySelector('.campaign-title').textContent = `Campaign ${campaignCount}`;
+                newCard.querySelectorAll('[name="gender"]').forEach(cb => cb.checked = true);
+            }
+            container.appendChild(newCard);
+            const justAddedCard = container.lastElementChild;
+            updateKpiOptions(justAddedCard);
+            justAddedCard.querySelector('.campaign-title').textContent = generateCampaignName(justAddedCard);
+            justAddedCard.classList.add('active');
+            toggleRemoveButtons(version);
+        };
+        
+        const toggleRemoveButtons = (version) => {
+            const container = versionsContainer.querySelector(`[data-version="${version}"] .campaign-container`);
+            const cards = container.querySelectorAll('.campaign-card');
+            const removeButtons = container.querySelectorAll('.remove-campaign-btn');
+            if(cards.length <= 1) {
+                removeButtons.forEach(btn => btn.disabled = true);
+            } else {
+                removeButtons.forEach(btn => btn.disabled = false);
+            }
+        };
+
+        const updateKpiOptions = (card) => {
+            const objective = card.querySelector('[name="campaign_objective"]').value;
+            const kpiSelect = card.querySelector('[name="main_kpi"]');
+            kpiSelect.innerHTML = (kpiOptions[objective] || []).map(kpi => `<option>${kpi}</option>`).join('');
+        };
+
+        form.addEventListener('click', (e) => {
+            const navBtn = e.target.closest('.nav-btn');
+            const duplicateBtn = e.target.closest('.duplicate-campaign-btn');
+            const removeBtn = e.target.closest('.remove-campaign-btn');
+            const addBtn = e.target.closest('#add-campaign-btn');
+            const audienceBtn = e.target.closest('.open-audience-builder-btn');
+            const header = e.target.closest('.campaign-card-header');
+            const reviewHeader = e.target.closest('.review-accordion-header');
+            const editBtn = e.target.closest('.edit-version-btn');
+            const submitBtn = e.target.closest('#submit-brief-btn');
+            
+            if (navBtn && navBtn.dataset.targetStep) { showStep(parseInt(navBtn.dataset.targetStep)); return; }
+            if (e.target.closest('#select-platform-meta')) { showStep(2); return; }
+            if (duplicateBtn) { addCampaignCard(appState.currentVersion, e.target.closest('.campaign-card')); return; }
+            if (addBtn) { addCampaignCard(appState.currentVersion); return; }
+            if (audienceBtn) { activeCampaignCardForAudience = e.target.closest('.campaign-card'); am.openModal(); return; }
+            if (header && !e.target.closest('button')) { header.parentElement.classList.toggle('active'); return; }
+            if (reviewHeader && !e.target.closest('button')) { reviewHeader.parentElement.classList.toggle('active'); return; }
+            if(removeBtn){
+                const card = removeBtn.closest('.campaign-card');
+                const version = card.querySelector('.version-input').value;
+                card.remove();
+                toggleRemoveButtons(version);
+            }
+            if(editBtn) {
+                const versionToEdit = parseInt(editBtn.dataset.versionToEdit);
+                appState.currentVersion = versionToEdit;
+                showVersion(versionToEdit);
+                showStep(3);
+            }
+            if(e.target.closest('#add-version-btn')) createNewVersion();
+            if(submitBtn) { console.log(JSON.stringify(buildFinalJsonObject(), null, 2)); showStep(6); }
+        });
+
+        form.addEventListener('input', e => {
+            const card = e.target.closest('.campaign-card');
+            if(card) {
+                if (e.target.matches('.campaign-objective-select')) { updateKpiOptions(card); }
+                card.querySelector('.campaign-title').textContent = generateCampaignName(card);
+            }
+        });
+
+        (async () => {
+            const bizSelect = document.getElementById('business-account'); const adSelect = document.getElementById('ad-account');
+            bizSelect.innerHTML = `<option>Loading...</option>`;
+            const accounts = await fetchBusinessAccounts();
+            bizSelect.innerHTML = '<option value="">Select Business...</option>'; accounts.forEach(acc => bizSelect.add(new Option(acc.name, acc.id)));
+            bizSelect.addEventListener('change', async (e) => {
+                adSelect.innerHTML = `<option>Loading...</option>`; adSelect.disabled = true;
+                if (!e.target.value) return;
+                const adAccounts = await fetchAdAccounts(e.target.value);
+                adSelect.innerHTML = '<option value="">Select Ad Account...</option>'; adAccounts.forEach(acc => adSelect.add(new Option(acc.name, acc.id)));
+                adSelect.disabled = false;
+            });
+        })();
+        
+        const getMonthYearSuffix = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const month = date.toLocaleString('default', { month: 'short' }).toLowerCase();
+            const year = date.getFullYear().toString().slice(-2);
+            return `${month}${year}`;
+        };
+
+        const generateCampaignName = (card) => {
+            const format = (str) => (str || '').toLowerCase().replace(/[\s_&]+/g, '-');
+            let placement = format(card.querySelector('[name="placement"]').value);
+            if (placement === 'advantage+') placement = 'fb';
+            const components = [
+                format(card.querySelector('[name="campaign_objective"]').value), format(card.querySelector('[name="main_kpi"]').value),
+                placement, format(card.querySelector('[name="campaign_type"]').value),
+                format(card.querySelector('[name="campaign_tactics"]').value), format(document.getElementById('brand-name').value),
+                format(card.querySelector('[name="region"]').value), format(card.querySelector('[name="audience_targeting"]').value),
+                getMonthYearSuffix(card.querySelector('[name="campaign_end"]').value),
+                `v${card.querySelector('.version-input').value}`
+            ];
+            return components.filter(Boolean).join('_');
+        };
+
+        const generateBudgetPage = () => {
+            const container = document.querySelector('[data-step="4"]');
+            const versionWrapper = versionsContainer.querySelector(`[data-version="${appState.currentVersion}"]`);
+            const campaigns = versionWrapper.querySelectorAll('.campaign-card');
+            const numCampaigns = campaigns.length;
+            const defaultSplit = numCampaigns > 0 ? (100 / numCampaigns).toFixed(2) : 0;
+            let splitsHtml = numCampaigns > 0 ? Array.from(campaigns).map(c => `<div class="p-3 bg-gray-800/50 rounded-md space-y-2"><div class="flex justify-between"><p class="font-semibold text-sm truncate pr-2" title="${generateCampaignName(c)}">${generateCampaignName(c)}</p><span class="calculated-budget font-bold text-blue-400 whitespace-nowrap">0</span></div><div class="flex items-center gap-2"><input type="number" class="budget-split-input w-full bg-gray-800 p-2 border border-gray-700 rounded-md" value="${numCampaigns === 1 ? '100' : defaultSplit}" step="0.01"><span class="font-mono text-lg">%</span></div></div>`).join('') : '<p class="text-gray-500">No campaigns created for this version.</p>';
+            container.innerHTML = `<h2 class="text-2xl font-semibold text-white">Step 4: Set Budget for Version ${appState.currentVersion}</h2><div class="mt-6 bg-gray-950 border border-gray-800 p-6 rounded-xl space-y-4"><div><label class="text-sm font-medium text-gray-400">Total Budget (in PHP)</label><input type="number" id="total-budget-${appState.currentVersion}" class="total-budget w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"></div><div><label class="text-sm font-medium text-gray-400">VAT Type</label><select id="vat-type-${appState.currentVersion}" class="w-full mt-1 bg-gray-800 p-2 border border-gray-700 rounded-md text-white"><option>Vat Inclusive</option><option>Vat Exclusive</option></select></div><div class="pt-4 border-t border-gray-800 space-y-3">${splitsHtml}</div><p class="budget-warning text-red-500 text-sm h-4"></p></div><div class="mt-8 flex justify-between"><button type="button" class="nav-btn bg-gray-600 hover:bg-gray-500" data-target-step="3">&larr; Back</button><button type="button" class="nav-btn bg-blue-600 hover:bg-blue-500" data-target-step="5">Next: Review &rarr;</button></div>`;
+            const budgetData = appState.mediaplanVersions.find(v => v.version === appState.currentVersion);
+            if(budgetData) { container.querySelector('.total-budget').value = budgetData.totalBudget; container.querySelector(`#vat-type-${appState.currentVersion}`).value = budgetData.vat; container.querySelectorAll('.budget-split-input').forEach((input, i) => input.value = budgetData.splits[i]); }
+            updateCalculatedBudgets(appState.currentVersion);
+            container.addEventListener('input', (e) => { if (e.target.matches('.total-budget, .budget-split-input')) updateCalculatedBudgets(appState.currentVersion); });
+        };
+
+        const updateCalculatedBudgets = (version) => {
+            const container = document.querySelector(`[data-step="4"]`); if(!container || !container.innerHTML) return;
+            const totalBudget = parseFloat(container.querySelector(`#total-budget-${version}`).value) || 0;
+            const splitInputs = container.querySelectorAll('.budget-split-input');
+            let totalSplit = 0;
+            splitInputs.forEach(input => {
+                const percentage = parseFloat(input.value) || 0; totalSplit += percentage;
+                const amount = (totalBudget * 100) * (percentage / 100); // Micro-currency calculation
+                input.parentElement.parentElement.querySelector('.calculated-budget').textContent = amount.toLocaleString('en-US');
+            });
+            container.querySelector('.budget-warning').textContent = (totalSplit.toFixed(0) != 100 && totalSplit > 0) ? `Total split is ${totalSplit.toFixed(2)}%. Must be 100%.` : '';
+        };
+
+        const saveCurrentVersionBudget = () => {
+            const version = appState.currentVersion;
+            const container = document.querySelector(`[data-step="4"]`); if (!container || !container.innerHTML) return;
+            const existing = appState.mediaplanVersions.find(v => v.version === version);
+            const budgetData = { version, totalBudget: container.querySelector('.total-budget').value || 0, vat: container.querySelector(`#vat-type-${version}`).value || 'Vat Inclusive', splits: Array.from(container.querySelectorAll('.budget-split-input')).map(i => i.value || 0) };
+            if (existing) Object.assign(existing, budgetData); else appState.mediaplanVersions.push(budgetData);
+        };
+        
+        const generateReviewPage = () => {
+            saveCurrentVersionBudget();
+            const container = document.querySelector('[data-step="5"]');
+             const getCampaignDataAsHtml = (card) => {
+                const fields = [
+                    { label: 'Product', name: 'product' }, { label: 'Promoted Object', name: 'fb_page' },
+                    { label: 'Campaign Type', name: 'campaign_type' }, { label: 'Tactics', name: 'campaign_tactics' },
+                    { label: 'Objective', name: 'campaign_objective' }, { label: 'KPI', name: 'main_kpi' },
+                    { label: 'Start Date', name: 'campaign_start' }, { label: 'End Date', name: 'campaign_end' },
+                    { label: 'Region', name: 'region' }, { label: 'Age', name: 'min_age', name2: 'max_age' },
+                    { label: 'Gender', name: 'gender' }, { label: 'Audience', name: 'audience_targeting' },
+                ];
+                let html = '<dl class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs mt-2">';
+                fields.forEach(field => {
+                    let value;
+                    if (field.name === 'gender') { value = Array.from(card.querySelectorAll('[name="gender"]:checked')).map(cb => cb.value).join(', ') || 'N/A'; }
+                    else if (field.name2) { value = `${card.querySelector(`[name="${field.name}"]`).value}-${card.querySelector(`[name="${field.name2}"]`).value}`; }
+                    else { value = card.querySelector(`[name="${field.name}"]`)?.value || 'N/A'; }
+                    html += `<div class="col-span-1 flex flex-col"><dt class="font-semibold text-gray-400 capitalize">${field.label}</dt><dd class="text-gray-200 truncate">${value}</dd></div>`;
+                });
+                return html + '</dl>';
+            };
+
+            let reviewHtml = appState.mediaplanVersions.map(v => {
+                const campaignWrapper = versionsContainer.querySelector(`[data-version="${v.version}"]`);
+                const campaigns = campaignWrapper.querySelectorAll('.campaign-card');
+                let campaignDetails = Array.from(campaigns).map((card, i) => {
+                    const split = v.splits[i] || 0;
+                    const amount = (parseFloat(v.totalBudget) * (parseFloat(split) / 100)).toLocaleString('en-US');
+                    const audienceData = JSON.parse(card.querySelector('.audience-data').value || '[]');
+                    const audienceHtml = am.renderSummaryHtml(audienceData);
+                    return `<div class="p-4 bg-gray-800/50 rounded-lg space-y-3">
+                                <div class="pb-2 border-b border-gray-700">
+                                    <p class="font-semibold text-white truncate" title="${generateCampaignName(card)}">${generateCampaignName(card)}</p>
+                                    <p class="text-sm text-gray-400">Budget: ${split}% (${amount.toLocaleString()})</p>
+                                </div>
+                                ${getCampaignDataAsHtml(card)}
+                                ${audienceHtml ? `<div class="mt-2 text-xs border-t border-gray-700 pt-2">${audienceHtml}</div>` : ''}
+                            </div>`;
+                }).join('');
+                return `<div class="review-accordion p-4 bg-gray-950 border border-gray-800 rounded-lg">
+                            <div class="review-accordion-header cursor-pointer flex justify-between items-center">
+                                <div><h3 class="text-lg font-bold text-white">Version ${v.version} Summary</h3><p class="text-sm text-gray-400">${campaigns.length} campaigns, ${parseFloat(v.totalBudget).toLocaleString()} total</p></div>
+                                <div class="flex items-center gap-4">
+                                    <button type="button" class="edit-version-btn nav-btn bg-blue-600 hover:bg-blue-500 text-sm py-1 px-3" data-version-to-edit="${v.version}">Edit</button>
+                                    <svg class="accordion-chevron w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                                </div>
+                            </div>
+                            <div class="review-accordion-body pt-4 mt-4 border-t border-gray-700 space-y-4">${campaignDetails}</div>
+                        </div>`;
+            }).join('');
+            container.innerHTML = `<h2 class="text-2xl font-semibold text-white">Step 5: Review & Finalize</h2><div class="mt-6 space-y-4">${reviewHtml}</div><div class="mt-8 flex justify-between items-center"><button type="button" class="nav-btn bg-gray-600" data-target-step="4">&larr; Back</button><div><button type="button" id="add-version-btn" class="nav-btn bg-indigo-600 hover:bg-indigo-500 mr-4">+ Create New Version</button><button type="button" id="submit-brief-btn" class="nav-btn bg-emerald-600 hover:bg-emerald-500">Confirm & Send</button></div></div>`;
+        };
+
+        const showVersion = (version) => {
+            versionsContainer.querySelectorAll('.campaign-version-wrapper').forEach(w => w.classList.add('hidden'));
+            versionsContainer.querySelector(`[data-version="${version}"]`).classList.remove('hidden');
+            document.getElementById('current-version-label').textContent = `Version ${version}`;
+        };
+
+        const createNewVersion = () => {
+            saveCurrentVersionBudget();
+            const oldVersion = appState.currentVersion;
+            appState.currentVersion++;
+            const newWrapper = document.createElement('div');
+            newWrapper.className = 'campaign-version-wrapper';
+            newWrapper.dataset.version = appState.currentVersion;
+            newWrapper.innerHTML = `<div class="campaign-container space-y-4"></div>`;
+            versionsContainer.appendChild(newWrapper);
+            const oldCampaigns = versionsContainer.querySelector(`[data-version="${oldVersion}"]`).querySelectorAll('.campaign-card');
+            oldCampaigns.forEach(card => addCampaignCard(appState.currentVersion, card));
+            showVersion(appState.currentVersion);
+            showStep(3);
+        };
+
+        const buildFinalJsonObject = () => {
+            const getVal = (el, name) => (el.querySelector(`[name="${name}"]`)?.value.trim() || null);
+            const finalBrief = {
+                business_name: document.getElementById('business-account').options[document.getElementById('business-account').selectedIndex].text,
+                ad_account_name: document.getElementById('ad-account').options[document.getElementById('ad-account').selectedIndex].text,
+                brand: document.getElementById('brand-name').value || null, client: document.getElementById('client-name').value || null, campaigns: []
+            };
+            appState.mediaplanVersions.forEach(vData => {
+                versionsContainer.querySelector(`[data-version="${vData.version}"]`).querySelectorAll('.campaign-card').forEach((card, index) => {
+                    const audienceData = JSON.parse(getVal(card, 'audience_interests') || '[]');
+                    const flexibleSpec = audienceData.reduce((spec, item) => {
+                        const key = { Interests: 'interests', Demographics: 'life_events', Behaviors: 'behaviors' }[(item.path && item.path[0]) || 'Interests'] || 'interests';
+                        if (!spec[key]) spec[key] = [];
+                        spec[key].push({ id: item.id, name: item.name });
+                        return spec;
+                    }, {});
+                    const split = parseFloat(vData.splits[index] || (vData.splits.length === 1 ? 100 : 0));
+                    finalBrief.campaigns.push({
+                        product: getVal(card, 'product'), fb_page: getVal(card, 'fb_page'), platform: getVal(card, 'platform'), placement: getVal(card, 'placement'),
+                        buying_strategy_execution: getVal(card, 'buying_strategy_execution'), buying_strategy_forecasting: getVal(card, 'buying_strategy_forecasting'),
+                        campaign_budget: (parseFloat(vData.totalBudget) * 100) * (split / 100), vat: vData.vat, budget_split: split / 100,
+                        campaign_start: getVal(card, 'campaign_start'), campaign_end: getVal(card, 'campaign_end'), campaign_objective: getVal(card, 'campaign_objective'), main_kpi: getVal(card, 'main_kpi'),
+                        campaign_type: getVal(card, 'campaign_type'), campaign_tactics: getVal(card, 'campaign_tactics'), brand: document.getElementById('brand-name').value || null,
+                        location_targeting: getVal(card, 'location_targeting_identifier'), location_targeting_country: getVal(card, 'location_targeting_country'), region: getVal(card, 'region'),
+                        age: `${getVal(card, 'min_age')}-${getVal(card, 'max_age')}`,
+                        gender: Array.from(card.querySelectorAll('[name="gender"]:checked')).map(cb => cb.value).join(', ') || null,
+                        audience_targeting: getVal(card, 'audience_targeting'),
+                        targeting: { flexible_spec: Object.keys(flexibleSpec).length > 0 ? [flexibleSpec] : [] },
+                        audience_interest_list_included: [], audience_interest_list_excluded: [], b2b_or_b2c: null, audience_interest_list_included_demographics: [], "use_case_no.": null,
+                        versioning: vData.version, requires_expansion: false
+                    });
+                });
+            });
+            return finalBrief;
+        };
+        
+        const audienceModalContainer = document.getElementById('audience-modal');
+        const am = {}; const state = { selectedItems: new Map() };
+        const searchMetaAudiences = async (query) => mockFetch({data: [{id: `600${Math.floor(Math.random()*9999999999)}`, name: `${query} Fans`, audience_size: 1500000, path: ['Interests', 'Hobbies']}, {id: `601${Math.floor(Math.random()*9999999999)}`, name: `Luxury ${query}`, audience_size: 500000, path: ['Demographics', 'Income']}, {id: `602${Math.floor(Math.random()*9999999999)}`, name: `Frequent ${query} Buyers`, audience_size: 750000, path: ['Behaviors', 'Purchase']}]}, 800);
+        Object.assign(am, {
+            init: () => {
+                audienceModalContainer.innerHTML = `<div class="bg-gray-900 w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-gray-700"><header class="text-center p-6 border-b border-gray-800"><h1 class="text-3xl font-bold text-white">Audience Builder</h1></header><main class="grid grid-cols-1 lg:grid-cols-5 gap-6 p-6 flex-grow overflow-hidden"><div class="lg:col-span-3 flex flex-col"><input type="text" id="searchInput" placeholder="e.g., Fitness..." class="w-full bg-gray-800 p-3 border-2 border-gray-700 rounded-lg"><div id="results" class="mt-4 overflow-y-auto flex-grow"></div></div><div class="lg:col-span-2 flex flex-col"><h2 class="text-xl font-semibold mb-4">Selected Audience</h2><div id="selected-list" class="overflow-y-auto flex-grow bg-gray-950/50 p-2 rounded-md"></div></div></main><footer class="p-4 border-t border-gray-800 flex justify-end gap-3"><button type="button" id="audience-cancel-btn" class="nav-btn bg-gray-600">Cancel</button><button type="button" id="audience-save-btn" class="nav-btn bg-blue-600">Save Audience</button></footer></div>`;
+                am.ui = { searchInput: document.getElementById('searchInput'), results: document.getElementById('results'), selectedList: document.getElementById('selected-list') };
+                am.ui.searchInput.addEventListener('keydown', (e) => (e.key === 'Enter') && am.handleSearch());
+                audienceModalContainer.addEventListener('click', (e) => {
+                    const addBtn = e.target.closest('.add-interest-btn');
+                    const removeBtn = e.target.closest('.remove-interest-btn');
+                    if (e.target.closest('#audience-cancel-btn')) audienceModalContainer.classList.add('hidden');
+                    if (e.target.closest('#audience-save-btn')) am.save();
+                    if (addBtn) am.addToList(JSON.parse(addBtn.dataset.item), addBtn);
+                    if (removeBtn) am.removeFromList(removeBtn.dataset.id);
+                });
+            },
+            openModal: () => {
+                state.selectedItems.clear();
+                try { JSON.parse(activeCampaignCardForAudience.querySelector('.audience-data').value || '[]').forEach(item => state.selectedItems.set(item.id, item)); } catch {}
+                am.updateSelectedList(); am.ui.searchInput.value = ''; am.ui.results.innerHTML = `<div class="flex items-center justify-center h-full text-gray-600">Search results will appear here.</div>`;
+                audienceModalContainer.classList.remove('hidden');
+            },
+            save: () => { const data = Array.from(state.selectedItems.values()); activeCampaignCardForAudience.querySelector('.audience-data').value = JSON.stringify(data); am.renderSummaryOnCard(activeCampaignCardForAudience, data); audienceModalContainer.classList.add('hidden'); },
+            handleSearch: async () => { am.ui.results.innerHTML = `<div class="skeleton h-16 w-full rounded-lg mb-2"></div>`.repeat(5); const { data } = await searchMetaAudiences(am.ui.searchInput.value.trim()); am.displayResults(data); },
+            displayResults: (data) => { am.ui.results.innerHTML = data.map(item => `<div class="p-4 bg-gray-800 rounded-lg mb-2 flex justify-between items-center"><div class="pr-4"><p class="font-semibold">${item.name}</p><p class="text-xs mt-1">${am.getPathHtml(item.path)}</p></div><button data-item='${JSON.stringify(item)}' class="add-interest-btn nav-btn text-sm ${state.selectedItems.has(item.id) ? 'bg-green-600' : 'bg-blue-600'}" ${state.selectedItems.has(item.id) ? 'disabled' : ''}>${state.selectedItems.has(item.id) ? 'Added' : 'Add'}</button></div>`).join(''); },
+            getPathHtml: (path) => { if (!path) return ''; const colors = { Interests: 'text-blue-400', Behaviors: 'text-green-400', Demographics: 'text-yellow-400' }; return `<span class="font-semibold ${colors[path[0]] || ''}">${path[0]}</span>`; },
+            addToList: (item, button) => { if (!state.selectedItems.has(item.id)) { state.selectedItems.set(item.id, item); am.updateSelectedList(); button.textContent = 'Added'; button.disabled = true; button.classList.replace('bg-blue-600', 'bg-green-600'); } },
+            removeFromList: (itemId) => { if (state.selectedItems.has(itemId)) { state.selectedItems.delete(itemId); am.updateSelectedList(); const btn = am.ui.results.querySelector(`.add-interest-btn[data-item*='"id":"${itemId}"']`); if(btn) { btn.textContent = 'Add'; btn.disabled = false; btn.classList.replace('bg-green-600', 'bg-blue-600'); } } },
+            updateSelectedList: () => { am.ui.selectedList.innerHTML = state.selectedItems.size > 0 ? Array.from(state.selectedItems.values()).map(item => `<div class="p-2 bg-gray-800 rounded mb-1 flex justify-between items-center text-sm"><span class="flex items-center gap-2">${am.getPathHtml(item.path)}<span>${item.name}</span></span><button data-id="${item.id}" class="remove-interest-btn text-red-500 font-bold px-2">&times;</button></div>`).join('') : `<div class="text-gray-600 text-center p-4">List is empty.</div>`; },
+            renderSummaryHtml: (data) => {
+                if (!data || data.length === 0) return '';
+                const grouped = data.reduce((acc, item) => { const cat = (item.path && item.path[0]) || 'Interests'; if (!acc[cat]) acc[cat] = []; acc[cat].push(item); return acc; }, {});
+                const colors = {Interests: 'bg-blue-900/50 text-blue-300', Behaviors: 'bg-green-900/50 text-green-300', Demographics: 'bg-yellow-900/50 text-yellow-300'};
+                return Object.entries(grouped).map(([cat, items]) => `<div class="mb-1"><h5 class="text-xs font-bold text-gray-500 uppercase">${cat}</h5><div class="flex flex-wrap gap-1 mt-1">${items.map(item => `<span class="px-1.5 py-0.5 text-xs rounded-full ${colors[cat] || 'bg-gray-700'}">${item.name}</span>`).join('')}</div></div>`).join('');
+            },
+            renderSummaryOnCard: (card, data) => {
+                const display = card.querySelector('.audience-summary-display');
+                display.innerHTML = am.renderSummaryHtml(data) || `<span class="text-gray-500 italic">No detailed audience selected.</span>`;
+            }
+        });
+        
+        am.init();
+        addCampaignCard(1);
+        showStep(1);
+    });
+    </script>
+</body>
+</html>
+
